@@ -7,7 +7,7 @@
 static const char* TAG = "camera_xclk";
 
 esp_err_t camera_enable_out_clock(camera_config_t* config) {
-	if (CONFIG_XCLK != 0) {
+	if (config->pin_xclk != 0) {
 		periph_module_enable(PERIPH_LEDC_MODULE);
 
 		ledc_timer_config_t timer_conf;

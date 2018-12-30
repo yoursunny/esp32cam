@@ -1,3 +1,5 @@
+#define CONFIG_OV2640_SUPPORT 1
+
 /*
  * Portions of this file come from OpenMV project (see sensor_* functions in the end of file)
  * Here is the copyright for these parts:
