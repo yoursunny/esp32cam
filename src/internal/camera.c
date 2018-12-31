@@ -34,6 +34,7 @@
 
 #include <driver/gpio.h>
 #include <driver/periph_ctrl.h>
+#include <esp32-hal-psram.h>
 #include <esp_intr_alloc.h>
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
@@ -275,7 +276,11 @@ camera_init(const camera_config_t* config)
     s_state->sampling_mode, s_state->width, s_state->height);
 
   ESP_LOGD(TAG, "Allocating frame buffer (%d bytes)", s_state->fb_size);
-  s_state->fb = (uint8_t*)calloc(s_state->fb_size, 1);
+  if (psramFound()) {
+    s_state->fb = (uint8_t*)ps_calloc(s_state->fb_size, 1);
+  } else {
+    s_state->fb = (uint8_t*)calloc(s_state->fb_size, 1);
+  }
   if (s_state->fb == NULL) {
     ESP_LOGE(TAG, "Failed to allocate frame buffer");
     err = ESP_ERR_NO_MEM;

@@ -18,7 +18,7 @@ OV2640::~OV2640()
 }
 
 bool
-OV2640::begin()
+OV2640::begin(Resolution resolution)
 {
   if (m_pins == nullptr) {
     // already initialized
@@ -44,7 +44,7 @@ OV2640::begin()
   cfg.pin_sscb_scl = m_pins->SCL;
   cfg.pin_reset = m_pins->RESET;
   cfg.xclk_freq_hz = 20000000;
-  cfg.frame_size = CAMERA_FS_QQVGA;
+  cfg.frame_size = static_cast<camera_framesize_t>(resolution);
   cfg.pixel_format = CAMERA_PF_RGB565;
 
   if (camera_probe(&cfg) != ESP_OK || camera_init(&cfg) != ESP_OK) {
@@ -61,10 +61,16 @@ OV2640::capture()
   return err == ESP_OK;
 }
 
-OV2640::Resolution
-OV2640::getResolution() const
+int
+OV2640::getWidth() const
 {
-  return Resolution{camera_get_fb_width(), camera_get_fb_height()};
+  return camera_get_fb_width();
+}
+
+int
+OV2640::getHeight() const
+{
+  return camera_get_fb_height();
 }
 
 const uint8_t*
@@ -82,13 +88,18 @@ OV2640::sizeofFrameBuffer() const
 bool
 OV2640::writeBmp(Print& os) const
 {
-  auto res = this->getResolution();
-  bitmap_header_t* header = bmp_create_header(res.width, res.height);
+  bitmap_header_t* header = bmp_create_header(this->getWidth(), this->getHeight());
   if (header == nullptr) {
     return false;
   }
   os.write(reinterpret_cast<const uint8_t*>(header), sizeof(*header));
   free(header);
-  os.write(this->getFrameBuffer(), this->sizeofFrameBuffer());
+
+  const uint8_t* fb = this->getFrameBuffer();
+  for (size_t i = 0, sz = this->sizeofFrameBuffer();
+       i < sz;
+       i += os.write(&fb[i], sz - i)) {
+    yield();
+  }
   return true;
 }

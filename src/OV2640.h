@@ -23,10 +23,21 @@ public:
     int RESET;
   };
 
-  struct Resolution
-  {
-    int width;
-    int height;
+  enum Resolution {
+    R_40x30,
+    R_64x32,
+    R_64x64,
+    R_88x72,
+    R_160x120,
+    R_128x160,
+    R_176x144,
+    R_240x160,
+    R_320x240,
+    R_352x288,
+    R_640x480,
+    R_800x600,
+    R_1280x1024,
+    R_1600x1200,
   };
 
   explicit
@@ -34,14 +45,14 @@ public:
 
   ~OV2640();
 
-  bool begin();
+  bool begin(Resolution resolution = R_160x120);
 
   bool capture();
 
-  Resolution getResolution() const;
+  int getWidth() const;
+  int getHeight() const;
 
   const uint8_t* getFrameBuffer() const;
-
   size_t sizeofFrameBuffer() const;
 
   bool writeBmp(Print& os) const;
