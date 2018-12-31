@@ -43,7 +43,7 @@ OV2640::begin(Resolution resolution)
   cfg.pin_sscb_sda = m_pins->SDA;
   cfg.pin_sscb_scl = m_pins->SCL;
   cfg.pin_reset = m_pins->RESET;
-  cfg.xclk_freq_hz = 20000000;
+  cfg.xclk_freq_hz = 7000000;
   cfg.frame_size = static_cast<camera_framesize_t>(resolution);
   cfg.pixel_format = CAMERA_PF_RGB565;
 

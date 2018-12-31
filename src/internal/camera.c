@@ -52,7 +52,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#define ENABLE_TEST_PATTERN CONFIG_ENABLE_TEST_PATTERN
+#define ENABLE_TEST_PATTERN 0
 
 #define REG_PID 0x0A
 #define REG_VER 0x0B
