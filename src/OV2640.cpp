@@ -86,7 +86,7 @@ OV2640::sizeofFrameBuffer() const
 }
 
 bool
-OV2640::writeBmp(Print& os) const
+OV2640::writeBmp(Print& os, int timeout) const
 {
   bitmap_header_t* header = bmp_create_header(this->getWidth(), this->getHeight());
   if (header == nullptr) {
@@ -95,10 +95,14 @@ OV2640::writeBmp(Print& os) const
   os.write(reinterpret_cast<const uint8_t*>(header), sizeof(*header));
   free(header);
 
+  unsigned long startTime = millis();
   const uint8_t* fb = this->getFrameBuffer();
   for (size_t i = 0, sz = this->sizeofFrameBuffer();
        i < sz;
        i += os.write(&fb[i], sz - i)) {
+    if (millis() - startTime > static_cast<unsigned long>(timeout)) {
+      return false;
+    }
     yield();
   }
   return true;

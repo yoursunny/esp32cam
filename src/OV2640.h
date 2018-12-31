@@ -55,7 +55,7 @@ public:
   const uint8_t* getFrameBuffer() const;
   size_t sizeofFrameBuffer() const;
 
-  bool writeBmp(Print& os) const;
+  bool writeBmp(Print& os, int timeout = 4000) const;
 
 private:
   Pins* m_pins;
