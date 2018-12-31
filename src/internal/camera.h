@@ -14,8 +14,8 @@
 
 #pragma once
 
-#include "driver/ledc.h"
-#include "esp_err.h"
+#include <driver/ledc.h>
+#include <esp_err.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,13 +36,6 @@ typedef enum {
   CAMERA_FS_SXGA = 12, //	1280* 1024
   CAMERA_FS_UXGA = 13, // 1600*1200
 } camera_framesize_t;
-
-typedef enum {
-  CAMERA_NONE = 0,
-  CAMERA_UNKNOWN = 1,
-  CAMERA_OV7725 = 7725,
-  CAMERA_OV2640 = 2640,
-} camera_model_t;
 
 typedef struct
 {
@@ -85,11 +78,9 @@ typedef struct
  * detects the camera I2C address and detects camera model.
  *
  * @param config camera configuration parameters
- * @param[out] out_camera_model output, detected camera model
  * @return ESP_OK if camera was detected
  */
-esp_err_t camera_probe(const camera_config_t* config,
-                       camera_model_t* out_camera_model);
+esp_err_t camera_probe(const camera_config_t* config);
 
 /**
  * @brief Initialize the camera driver

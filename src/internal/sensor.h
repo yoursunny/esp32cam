@@ -9,12 +9,9 @@
  */
 #ifndef __SENSOR_H__
 #define __SENSOR_H__
-#include "wiring.h"
 #include <stdint.h>
 
-#define OV9650_PID (0x96)
 #define OV2640_PID (0x26)
-#define OV7725_PID (0x77)
 
 typedef struct
 {

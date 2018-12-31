@@ -19,10 +19,9 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #include "twi.h"
-#include "soc/gpio_reg.h"
-#include "wiring.h"
+#include <esp32-hal-gpio.h>
+#include <soc/gpio_reg.h>
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 
 unsigned char twi_dcount = 18;

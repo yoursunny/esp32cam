@@ -1,13 +1,13 @@
 #pragma once
 
 #include "camera.h"
-#include "esp_err.h"
-#include "esp_intr_alloc.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-#include "freertos/task.h"
-#include "rom/lldesc.h"
 #include "sensor.h"
+#include <esp_err.h>
+#include <esp_intr_alloc.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
+#include <freertos/task.h>
+#include <rom/lldesc.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>

@@ -21,6 +21,8 @@
 #ifndef SI2C_h
 #define SI2C_h
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

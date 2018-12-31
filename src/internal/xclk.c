@@ -1,9 +1,9 @@
 #include "xclk.h"
-#include "driver/gpio.h"
-#include "driver/i2s.h"
-#include "driver/ledc.h"
-#include "esp_err.h"
-#include "esp_log.h"
+#include <driver/gpio.h>
+#include <driver/i2s.h>
+#include <driver/ledc.h>
+#include <esp_err.h>
+#include <esp_log.h>
 static const char* TAG = "camera_xclk";
 
 esp_err_t

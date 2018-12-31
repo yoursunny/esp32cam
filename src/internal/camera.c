@@ -1,5 +1,3 @@
-#define CONFIG_OV2640_SUPPORT 1
-
 /*
  * Portions of this file come from OpenMV project (see sensor_* functions in the
  * end of file)
@@ -28,35 +26,30 @@
 // limitations under the License.
 #include "camera.h"
 #include "camera_common.h"
-#include "driver/gpio.h"
-#include "driver/periph_ctrl.h"
-#include "esp_intr_alloc.h"
-#include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-#include "freertos/task.h"
-#include "rom/lldesc.h"
+#include "ov2640.h"
 #include "sccb.h"
 #include "sensor.h"
-#include "soc/gpio_sig_map.h"
-#include "soc/i2s_reg.h"
-#include "soc/i2s_struct.h"
-#include "soc/io_mux_reg.h"
-#include "soc/soc.h"
-#include "sys/time.h"
-#include "time.h"
 #include "twi.h"
-#include "wiring.h"
 #include "xclk.h"
+
+#include <driver/gpio.h>
+#include <driver/periph_ctrl.h>
+#include <esp_intr_alloc.h>
+#include <esp_log.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
+#include <freertos/task.h>
+#include <rom/lldesc.h>
+#include <soc/gpio_sig_map.h>
+#include <soc/i2s_reg.h>
+#include <soc/i2s_struct.h>
+#include <soc/io_mux_reg.h>
+#include <soc/soc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if CONFIG_OV2640_SUPPORT
-#include "ov2640.h"
-#endif
-#if CONFIG_OV7725_SUPPORT
-#include "ov7725.h"
-#endif
+#include <sys/time.h>
+#include <time.h>
 
 #define ENABLE_TEST_PATTERN CONFIG_ENABLE_TEST_PATTERN
 
@@ -126,7 +119,7 @@ i2s_bytes_per_sample(i2s_sampling_mode_t mode)
 }
 
 esp_err_t
-camera_probe(const camera_config_t* config, camera_model_t* out_camera_model)
+camera_probe(const camera_config_t* config)
 {
   if (s_state != NULL) {
     return ESP_ERR_INVALID_STATE;
@@ -155,17 +148,14 @@ camera_probe(const camera_config_t* config, camera_model_t* out_camera_model)
   gpio_set_level(config->pin_reset, 0);
   delay(1000);
 
-#if CONFIG_OV2640_SUPPORT
   uint8_t buf[] = { 0xff, 0x01 };
   twi_writeTo(0x30, buf, 2, true);
-#endif
 
   ESP_LOGD(TAG, "Searching for camera address");
   /* Probe the sensor */
   delay(10);
   uint8_t slv_addr = SCCB_Probe();
   if (slv_addr == 0) {
-    *out_camera_model = CAMERA_NONE;
     return ESP_ERR_CAMERA_NOT_DETECTED;
   }
   s_state->sensor.slv_addr = slv_addr;
@@ -180,21 +170,11 @@ camera_probe(const camera_config_t* config, camera_model_t* out_camera_model)
            id->VER, id->MIDH, id->MIDL);
 
   switch (id->PID) {
-#if CONFIG_OV2640_SUPPORT
     case OV2640_PID:
-      *out_camera_model = CAMERA_OV2640;
       ov2640_init(&s_state->sensor);
       break;
-#endif
-#if CONFIG_OV7725_SUPPORT
-    case OV7725_PID:
-      *out_camera_model = CAMERA_OV7725;
-      ov7725_init(&s_state->sensor);
-      break;
-#endif
     default:
       id->PID = 0;
-      *out_camera_model = CAMERA_UNKNOWN;
       ESP_LOGD(TAG, "Detected camera not supported.");
       return ESP_ERR_CAMERA_NOT_SUPPORTED;
   }
@@ -241,12 +221,6 @@ camera_init(const camera_config_t* config)
 #endif
 
   if (pix_format == PIXFORMAT_GRAYSCALE) {
-    //		if (s_state->sensor.id.PID != OV7725_PID) {
-    //			ESP_LOGE(TAG, "Grayscale format is only supported for
-    //ov7225");
-    //			err = ESP_ERR_NOT_SUPPORTED;
-    //			goto fail;
-    //		}
     s_state->fb_size = s_state->width * s_state->height;
     if (is_hs_mode()) {
       s_state->sampling_mode = SM_0A0B_0B0C;
@@ -258,12 +232,6 @@ camera_init(const camera_config_t* config)
     s_state->in_bytes_per_pixel = 2; // camera sends YUYV
     s_state->fb_bytes_per_pixel = 1; // frame buffer stores Y8
   } else if (pix_format == PIXFORMAT_RGB565) {
-    //		if (s_state->sensor.id.PID != OV7725_PID) {
-    //			ESP_LOGE(TAG, "RGB565 format is only supported for
-    //ov7225");
-    //			err = ESP_ERR_NOT_SUPPORTED;
-    //			goto fail;
-    //		}
     s_state->fb_size = s_state->width * s_state->height * 3;
     if (is_hs_mode()) {
       s_state->sampling_mode = SM_0A0B_0B0C;
@@ -275,11 +243,6 @@ camera_init(const camera_config_t* config)
     s_state->dma_filter = &dma_filter_rgb565;
 
   } else if (pix_format == PIXFORMAT_JPEG) {
-    if (s_state->sensor.id.PID != OV2640_PID) {
-      ESP_LOGE(TAG, "JPEG format is only supported for ov2640");
-      err = ESP_ERR_NOT_SUPPORTED;
-      goto fail;
-    }
     int qp = config->jpeg_quality;
     int compression_ratio_bound;
     if (qp >= 30) {

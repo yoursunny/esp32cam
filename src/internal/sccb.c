@@ -9,9 +9,11 @@
  */
 #include "sccb.h"
 #include "twi.h"
-#include "wiring.h"
 #include <stdbool.h>
 #include <stdio.h>
+
+#define __disable_irq()
+#define __enable_irq()
 
 #define SCCB_FREQ (100000) // We don't need fast I2C. 100KHz is fine here.
 #define TIMEOUT                                                                \
@@ -35,10 +37,6 @@ SCCB_Probe()
     if (twi_writeTo(i, &reg, 1, true) == 0) {
       slv_addr = i;
       break;
-    }
-
-    if (i != 126) {
-      systick_sleep(1); // Necessary for OV7725 camera (not for OV2640).
     }
   }
   return slv_addr;

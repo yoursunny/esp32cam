@@ -44,20 +44,12 @@ OV2640::begin()
   cfg.pin_sscb_scl = m_pins->SCL;
   cfg.pin_reset = m_pins->RESET;
   cfg.xclk_freq_hz = 20000000;
-
-  camera_model_t model;
-  esp_err_t err = camera_probe(&cfg, &model);
-  if (err != ESP_OK || model != CAMERA_OV2640) {
-    return false;
-  }
-
   cfg.frame_size = CAMERA_FS_QQVGA;
   cfg.pixel_format = CAMERA_PF_RGB565;
-  err = camera_init(&cfg);
-  if (err != ESP_OK) {
+
+  if (camera_probe(&cfg) != ESP_OK || camera_init(&cfg) != ESP_OK) {
     return false;
   }
-
   delete m_pins;
   return true;
 }
