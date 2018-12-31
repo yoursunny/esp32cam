@@ -8,6 +8,4 @@
 #define __disable_irq()
 #define __enable_irq()
 
-
-
 #endif //__OMV_PORT_H__

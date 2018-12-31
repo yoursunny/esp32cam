@@ -1,9 +1,9 @@
-/* 
+/*
   twi.h - Software I2C library for ESP31B
 
   Copyright (c) 2015 Hristo Gochkov. All rights reserved.
   This file is part of the ESP31B core for Arduino environment.
- 
+
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
@@ -28,8 +28,10 @@ extern "C" {
 void twi_init(unsigned char sda, unsigned char scl);
 void twi_stop(void);
 void twi_setClock(unsigned int freq);
-uint8_t twi_writeTo(unsigned char address, unsigned char * buf, unsigned int len, unsigned char sendStop);
-uint8_t twi_readFrom(unsigned char address, unsigned char * buf, unsigned int len, unsigned char sendStop);
+uint8_t twi_writeTo(unsigned char address, unsigned char* buf, unsigned int len,
+                    unsigned char sendStop);
+uint8_t twi_readFrom(unsigned char address, unsigned char* buf,
+                     unsigned int len, unsigned char sendStop);
 
 #ifdef __cplusplus
 }
