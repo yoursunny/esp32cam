@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include "internal/camera.h"
 
 class OV2640
 {
@@ -23,25 +22,17 @@ public:
     int RESET;
   };
 
-  enum Resolution {
-    R_40x30,
-    R_64x32,
-    R_64x64,
-    R_88x72,
+  enum Resolution
+  {
     R_160x120,
-    R_128x160,
-    R_176x144,
-    R_240x160,
     R_320x240,
-    R_352x288,
     R_640x480,
     R_800x600,
     R_1280x1024,
     R_1600x1200,
   };
 
-  explicit
-  OV2640(const Pins& pins);
+  explicit OV2640(const Pins& pins);
 
   ~OV2640();
 
@@ -59,4 +50,5 @@ public:
 
 private:
   Pins* m_pins;
+  void* m_fb;
 };
