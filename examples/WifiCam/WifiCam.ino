@@ -27,7 +27,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
 
-  bool ok = camera.begin(OV2640::R_240x160);
+  bool ok = camera.begin(OV2640::R_320x240);
   Serial.println(ok ? "CAMERA OK" : "CAMERA FAIL");
 
   WiFi.persistent(false);
