@@ -1,4 +1,4 @@
-#include <OV2640.h>
+#include <esp32cam.h>
 #include <WebServer.h>
 #include <WiFi.h>
 
@@ -7,28 +7,98 @@ const char* WIFI_PASS = "my-pass";
 
 WebServer server(80);
 
-OV2640 camera(OV2640::Pins{D0: 5, D1: 18, D2: 19, D3: 21, D4: 36, D5: 39, D6: 34, D7: 35,
-                           XCLK: 0, PCLK: 22, VSYNC: 25, HREF: 23, SDA: 26, SCL: 27, RESET: 32,});
+void printFrameInfo(const esp32cam::Frame& frame)
+{
+  Serial.print(frame.getWidth());
+  Serial.print("x");
+  Serial.print(frame.getHeight());
+  Serial.print(" ");
+  Serial.print(frame.size());
+  Serial.println("b");
+}
 
 void handleBmp() {
-  bool ok = camera.capture();
-  Serial.println(ok ? "CAPTURE OK" : "CAPTURE FAIL");
-  if (!ok) {
+  auto frame = esp32cam::capture();
+  if (frame == nullptr) {
+    Serial.println("CAPTURE FAIL");
     server.send(503, "", "");
     return;
   }
+  Serial.print("CAPTURE OK ");
+  printFrameInfo(*frame);
 
-  server.sendHeader("Content-Type", "image/bmp");
+  if (!frame->toBmp()) {
+    Serial.println("CONVERT FAIL");
+    server.send(503, "", "");
+    return;
+  }
+  Serial.print("CONVERT OK ");
+  printFrameInfo(*frame);
+
+  server.setContentLength(frame->size());
+  server.send(200, "image/bmp");
   WiFiClient client = server.client();
-  camera.writeBmp(client);
+  frame->writeTo(client);
 }
 
-void setup() {
+void handleJpg()
+{
+  auto frame = esp32cam::capture();
+  if (frame == nullptr) {
+    Serial.println("CAPTURE FAIL");
+    server.send(503, "", "");
+    return;
+  }
+  Serial.print("CAPTURE OK ");
+  printFrameInfo(*frame);
+
+  server.setContentLength(frame->size());
+  server.send(200, "image/jpeg");
+  WiFiClient client = server.client();
+  frame->writeTo(client);
+}
+
+void handleMjpeg()
+{
+#define BOUNDARY "1306e191eccc45528d155f34bc1f6c84"
+  WiFiClient client = server.client();
+  client.print("HTTP/1.1 200 OK\r\nContent-Type: multipart/x-mixed-replace;boundary=" BOUNDARY "\r\n\r\n");
+  while (true) {
+    auto frame = esp32cam::capture();
+    if (frame == nullptr) {
+      Serial.println("CAPTURE FAIL");
+      server.send(503, "", "");
+      break;
+    }
+    Serial.print("CAPTURE OK ");
+    printFrameInfo(*frame);
+
+    client.print("Content-Type: image/jpeg\r\nContent-Length: ");
+    client.print(frame->size());
+    client.print("\r\n\r\n");
+    if (!frame->writeTo(client)) {
+      break;
+    }
+    client.print("\r\n--" BOUNDARY "\r\n");
+  }
+#undef BOUNDARY
+}
+
+void setup()
+{
   Serial.begin(115200);
   Serial.println();
 
-  bool ok = camera.begin(OV2640::R_320x240);
-  Serial.println(ok ? "CAMERA OK" : "CAMERA FAIL");
+  {
+    using namespace esp32cam;
+    Config cfg;
+    cfg.setPins(pins::AiThinker);
+    cfg.setResolution(Resolution::find(640, 480));
+    cfg.setJpeg(80);
+
+    bool ok = Camera.begin(cfg);
+    Serial.println(ok ? "CAMERA OK" : "CAMERA FAIL");
+  }
 
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
@@ -36,14 +106,21 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
   }
-  Serial.print("http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("/bmp");
 
-  server.on("/bmp", handleBmp);
+  Serial.print("http://");
+  Serial.println(WiFi.localIP());
+  Serial.println("  /cam.bmp");
+  Serial.println("  /cam.jpg");
+  Serial.println("  /cam.mjpeg");
+
+  server.on("/cam.bmp", handleBmp);
+  server.on("/cam.jpg", handleJpg);
+  server.on("/cam.mjpeg", handleMjpeg);
+
   server.begin();
 }
 
-void loop() {
+void loop()
+{
   server.handleClient();
 }
