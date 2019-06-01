@@ -1,7 +1,7 @@
 #include "config.hpp"
 
+#include <algorithm>
 #include <cstring>
-
 #include <esp_camera.h>
 
 namespace esp32cam {
@@ -10,13 +10,7 @@ namespace detail {
 int
 convertJpegQuality(int quality)
 {
-  quality = 100 - quality;
-  if (quality < 0) {
-    quality = 0;
-  } else if (quality > 63) {
-    quality = 63;
-  }
-  return quality;
+  return std::min(63, std::max(0, 100 - quality));
 }
 
 } // namespace detail
@@ -68,6 +62,13 @@ Config&
 Config::setResolution(const Resolution& resolution)
 {
   m_cfg->frame_size = static_cast<framesize_t>(resolution.m_frameSize);
+  return *this;
+}
+
+Config&
+Config::setBufferCount(int n)
+{
+  m_cfg->fb_count = std::max(1, n);
   return *this;
 }
 

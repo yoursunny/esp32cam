@@ -29,6 +29,12 @@ public:
   Config&
   setResolution(const Resolution& resolution);
 
+  /** \brief Set number of frame buffers.
+   *  \param n >=1, having more frame buffers allows better streaming fps.
+   */
+  Config&
+  setBufferCount(int n);
+
   /** \brief Change pixel format to RGB565.
    */
   Config&
