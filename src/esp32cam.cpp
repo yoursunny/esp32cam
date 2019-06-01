@@ -1,5 +1,6 @@
 #include "esp32cam.h"
 
+#include <Arduino.h>
 #include <esp_camera.h>
 
 namespace esp32cam {
@@ -26,6 +27,40 @@ CameraClass::capture()
     return nullptr;
   }
   return std::unique_ptr<Frame>(new Frame(fb));
+}
+
+int
+CameraClass::streamMjpeg(Client& client, const StreamMjpegConfig& cfg)
+{
+#define BOUNDARY "e8b8c539-047d-4777-a985-fbba6edff11e"
+  client.print("HTTP/1.1 200 OK\r\n"
+               "Content-Type: multipart/x-mixed-replace;boundary=" BOUNDARY "\r\n"
+               "\r\n");
+  auto lastCapture = millis();
+  int nFrames;
+  for (nFrames = 0; cfg.maxFrames < 0 || nFrames < cfg.maxFrames; ++nFrames) {
+    auto now = millis();
+    auto sinceLastCapture = now - lastCapture;
+    if (static_cast<int>(sinceLastCapture) < cfg.minInterval) {
+      delay(cfg.minInterval - sinceLastCapture);
+    }
+    lastCapture = millis();
+
+    auto frame = capture();
+    if (frame == nullptr) {
+      break;
+    }
+
+    client.printf("Content-Type: image/jpeg\r\n"
+                  "Content-Length: %d\r\n"
+                  "\r\n", static_cast<int>(frame->size()));
+    if (!frame->writeTo(client, cfg.frameTimeout)) {
+      break;
+    }
+    client.print("\r\n--" BOUNDARY "\r\n");
+  }
+  return nFrames;
+#undef BOUNDARY
 }
 
 } // namespace esp32cam

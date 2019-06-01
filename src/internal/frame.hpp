@@ -9,6 +9,8 @@ class Print;
 
 namespace esp32cam {
 
+/** \brief A frame of picture.
+ */
 class Frame
 {
 public: // access
@@ -38,9 +40,21 @@ public: // access
     return m_height;
   }
 
+  /** \brief Write frame buffer to \p os .
+   *  \param os output stream.
+   *  \param timeout total time limit in millis.
+   *  \retval true writing completed.
+   *  \retval false writing disrupted by timeout.
+   */
   bool
   writeTo(Print& os, int timeout = 10000);
 
+  /** \brief Write frame buffer to \p os .
+   *  \param os output socket.
+   *  \param timeout total time limit in millis.
+   *  \retval true writing completed.
+   *  \retval false writing disrupted by timeout or socket error.
+   */
   bool
   writeTo(Client& os, int timeout = 10000);
 
@@ -68,6 +82,7 @@ public: // conversion
 private:
   Frame();
 
+  explicit
   Frame(void* fb);
 
   bool

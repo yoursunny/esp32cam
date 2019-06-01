@@ -11,14 +11,43 @@ namespace esp32cam {
 class CameraClass
 {
 public:
+  /** \brief Enable camera.
+   */
   bool
   begin(const Config& config);
 
+  /** \brief Disable camera.
+   */
   bool
   end();
 
+  /** \brief Capture a frame of picture.
+   */
   std::unique_ptr<Frame>
   capture();
+
+  struct StreamMjpegConfig
+  {
+    /// minimum interval between frame captures.
+    int minInterval = 0;
+    /// maximum number of frames before disconnecting.
+    int maxFrames = -1;
+    /// time limit of writing one frame in millis.
+    int frameTimeout = 10000;
+  };
+
+  /** \brief Stream Motion JPEG.
+   *  \pre The camera has been initialized to JPEG mode.
+   *  \return number of frames streamed.
+   */
+  int
+  streamMjpeg(Client& client, const StreamMjpegConfig& cfg);
+
+  int
+  streamMjpeg(Client& client)
+  {
+    return streamMjpeg(client, StreamMjpegConfig());
+  }
 };
 
 extern CameraClass Camera;

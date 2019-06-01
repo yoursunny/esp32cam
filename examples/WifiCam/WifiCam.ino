@@ -7,16 +7,6 @@ const char* WIFI_PASS = "my-pass";
 
 WebServer server(80);
 
-void printFrameInfo(const esp32cam::Frame& frame)
-{
-  Serial.print(frame.getWidth());
-  Serial.print("x");
-  Serial.print(frame.getHeight());
-  Serial.print(" ");
-  Serial.print(frame.size());
-  Serial.println("b");
-}
-
 void handleBmp() {
   auto frame = esp32cam::capture();
   if (frame == nullptr) {
@@ -24,16 +14,16 @@ void handleBmp() {
     server.send(503, "", "");
     return;
   }
-  Serial.print("CAPTURE OK ");
-  printFrameInfo(*frame);
+  Serial.printf("CAPTURE OK %dx%d %db\n", frame->getWidth(), frame->getHeight(),
+                static_cast<int>(frame->size()));
 
   if (!frame->toBmp()) {
     Serial.println("CONVERT FAIL");
     server.send(503, "", "");
     return;
   }
-  Serial.print("CONVERT OK ");
-  printFrameInfo(*frame);
+  Serial.printf("CONVERT OK %dx%d %db\n", frame->getWidth(), frame->getHeight(),
+                static_cast<int>(frame->size()));
 
   server.setContentLength(frame->size());
   server.send(200, "image/bmp");
@@ -49,8 +39,8 @@ void handleJpg()
     server.send(503, "", "");
     return;
   }
-  Serial.print("CAPTURE OK ");
-  printFrameInfo(*frame);
+  Serial.printf("CAPTURE OK %dx%d %db\n", frame->getWidth(), frame->getHeight(),
+                static_cast<int>(frame->size()));
 
   server.setContentLength(frame->size());
   server.send(200, "image/jpeg");
@@ -60,28 +50,16 @@ void handleJpg()
 
 void handleMjpeg()
 {
-#define BOUNDARY "1306e191eccc45528d155f34bc1f6c84"
+  Serial.println("STREAM BEGIN");
   WiFiClient client = server.client();
-  client.print("HTTP/1.1 200 OK\r\nContent-Type: multipart/x-mixed-replace;boundary=" BOUNDARY "\r\n\r\n");
-  while (true) {
-    auto frame = esp32cam::capture();
-    if (frame == nullptr) {
-      Serial.println("CAPTURE FAIL");
-      server.send(503, "", "");
-      break;
-    }
-    Serial.print("CAPTURE OK ");
-    printFrameInfo(*frame);
-
-    client.print("Content-Type: image/jpeg\r\nContent-Length: ");
-    client.print(frame->size());
-    client.print("\r\n\r\n");
-    if (!frame->writeTo(client)) {
-      break;
-    }
-    client.print("\r\n--" BOUNDARY "\r\n");
+  auto startTime = millis();
+  int res = esp32cam::Camera.streamMjpeg(client);
+  if (res <= 0) {
+    Serial.printf("STREAM ERROR %d\n");
+    return;
   }
-#undef BOUNDARY
+  auto duration = millis() - startTime;
+  Serial.printf("STREAM END %dfrm %0.2ffps\n", res, 1000.0 * res / duration);
 }
 
 void setup()
