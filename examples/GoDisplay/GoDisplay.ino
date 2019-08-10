@@ -6,7 +6,7 @@
 
 const char* WIFI_SSID = "my-ssid";
 const char* WIFI_PASS = "my-pass";
-const char* CAM_SERVER = "http://192.168.5.56";
+const char* CAM_SERVER = "http://192.0.2.1";
 
 void setup()
 {
@@ -24,7 +24,7 @@ void loop()
 {
   WiFiClient tcp;
   HTTPClient http;
-  http.begin(tcp, CAM_SERVER + String("/cam.jpg"));
+  http.begin(tcp, CAM_SERVER + String("/cam-lo.jpg"));
   int httpCode = http.GET();
   if (httpCode != 200) {
     Serial.printf("HTTP error %d\n", httpCode);
@@ -40,5 +40,5 @@ void loop()
 
   SpiRamOStream os(length);
   http.writeToStream(&os);
-  GO.lcd.drawJpg(os.data(), os.size(), 0, 0, 0, 0, 0, 0, JPEG_DIV_2);
+  GO.lcd.drawJpg(os.data(), os.size(), 0, 0, 0, 0, 0, 0, JPEG_DIV_NONE);
 }

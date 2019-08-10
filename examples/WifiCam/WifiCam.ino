@@ -7,7 +7,15 @@ const char* WIFI_PASS = "my-pass";
 
 WebServer server(80);
 
-void handleBmp() {
+static auto loRes = esp32cam::Resolution::find(320, 240);
+static auto hiRes = esp32cam::Resolution::find(800, 600);
+
+void handleBmp()
+{
+  if (!esp32cam::Camera.changeResolution(loRes)) {
+    Serial.println("SET-LO-RES FAIL");
+  }
+
   auto frame = esp32cam::capture();
   if (frame == nullptr) {
     Serial.println("CAPTURE FAIL");
@@ -31,7 +39,7 @@ void handleBmp() {
   frame->writeTo(client);
 }
 
-void handleJpg()
+void serveJpg()
 {
   auto frame = esp32cam::capture();
   if (frame == nullptr) {
@@ -48,14 +56,40 @@ void handleJpg()
   frame->writeTo(client);
 }
 
+void handleJpgLo()
+{
+  if (!esp32cam::Camera.changeResolution(loRes)) {
+    Serial.println("SET-LO-RES FAIL");
+  }
+  serveJpg();
+}
+
+void handleJpgHi()
+{
+  if (!esp32cam::Camera.changeResolution(hiRes)) {
+    Serial.println("SET-HI-RES FAIL");
+  }
+  serveJpg();
+}
+
+void handleJpg()
+{
+  server.sendHeader("Location", "/cam-hi.jpg");
+  server.send(302, "", "");
+}
+
 void handleMjpeg()
 {
+  if (!esp32cam::Camera.changeResolution(hiRes)) {
+    Serial.println("SET-HI-RES FAIL");
+  }
+
   Serial.println("STREAM BEGIN");
   WiFiClient client = server.client();
   auto startTime = millis();
   int res = esp32cam::Camera.streamMjpeg(client);
   if (res <= 0) {
-    Serial.printf("STREAM ERROR %d\n");
+    Serial.printf("STREAM ERROR %d\n", res);
     return;
   }
   auto duration = millis() - startTime;
@@ -71,7 +105,7 @@ void setup()
     using namespace esp32cam;
     Config cfg;
     cfg.setPins(pins::AiThinker);
-    cfg.setResolution(Resolution::find(640, 480));
+    cfg.setResolution(hiRes);
     cfg.setBufferCount(2);
     cfg.setJpeg(80);
 
@@ -89,10 +123,13 @@ void setup()
   Serial.print("http://");
   Serial.println(WiFi.localIP());
   Serial.println("  /cam.bmp");
-  Serial.println("  /cam.jpg");
+  Serial.println("  /cam-lo.jpg");
+  Serial.println("  /cam-hi.jpg");
   Serial.println("  /cam.mjpeg");
 
   server.on("/cam.bmp", handleBmp);
+  server.on("/cam-lo.jpg", handleJpgLo);
+  server.on("/cam-hi.jpg", handleJpgHi);
   server.on("/cam.jpg", handleJpg);
   server.on("/cam.mjpeg", handleMjpeg);
 

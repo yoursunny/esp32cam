@@ -21,6 +21,14 @@ public:
   bool
   end();
 
+  /** \brief Change camera resolution.
+   *  \pre Initial resolution is higher than specified resolution.
+   *  \param resolution new resolution
+   *  \param sleepFor how long to wait for stabilization (millis)
+   */
+  bool
+  changeResolution(const Resolution& resolution, int sleepFor = 500);
+
   /** \brief Capture a frame of picture.
    */
   std::unique_ptr<Frame>

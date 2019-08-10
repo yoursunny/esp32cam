@@ -61,7 +61,7 @@ Config::setPins(const Pins& pins)
 Config&
 Config::setResolution(const Resolution& resolution)
 {
-  m_cfg->frame_size = static_cast<framesize_t>(resolution.m_frameSize);
+  m_cfg->frame_size = resolution.as<framesize_t>();
   return *this;
 }
 

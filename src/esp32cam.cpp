@@ -19,6 +19,26 @@ CameraClass::end()
   return esp_camera_deinit() == ESP_OK;
 }
 
+bool
+CameraClass::changeResolution(const Resolution& resolution, int sleepFor)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  framesize_t frameSize = resolution.as<framesize_t>();
+  if (sensor->status.framesize == frameSize) {
+    return true;
+  }
+
+  if (sensor->set_framesize(sensor, frameSize) != 0) {
+    return false;
+  }
+  delay(sleepFor);
+  return true;
+}
+
 std::unique_ptr<Frame>
 CameraClass::capture()
 {

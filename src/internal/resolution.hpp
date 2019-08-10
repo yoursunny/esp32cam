@@ -24,10 +24,18 @@ public:
   static Resolution
   find(int minWidth, int minHeight);
 
+  /** \brief Convert to framesize_t (internal use).
+   *  \tparam T framesize_t
+   */
+  template<typename T>
+  T
+  as() const
+  {
+    return static_cast<T>(m_frameSize);
+  }
+
 private:
   int m_frameSize = -1;
-
-  friend class Config;
 };
 
 } // namespace esp32cam
