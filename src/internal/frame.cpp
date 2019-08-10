@@ -35,6 +35,7 @@ Frame::releaseFb()
 {
   if (m_fb != nullptr) {
     esp_camera_fb_return(m_fb);
+    m_fb = nullptr;
     m_data = nullptr;
   }
 }
