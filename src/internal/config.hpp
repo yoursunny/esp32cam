@@ -36,6 +36,11 @@ public:
    */
   Config& setRgb();
 
+  /** \brief Change pixel format to RGB888.
+   */
+  Config&
+  setRgb888();
+
   /** \brief Change pixel format to YUV422.
    */
   Config& setYuv();

@@ -38,23 +38,25 @@ Frame::releaseFb()
   }
 }
 
-bool
-Frame::writeTo(Print& os, int timeout)
-{
+bool Frame::writeTo(Print& os, int timeout) {
+  return writeToImpl(&os, timeout, nullptr);
+}
+bool Frame::writeTo(Print* os, int timeout) {
   return writeToImpl(os, timeout, nullptr);
 }
 
-bool
-Frame::writeTo(Client& os, int timeout)
-{
+bool Frame::writeTo(Client& os, int timeout) {
+  return writeToImpl(&os, timeout, &os);
+}
+bool Frame::writeTo(Client* os, int timeout) {
   return writeToImpl(os, timeout, &os);
 }
 
 bool
-Frame::writeToImpl(Print& os, int timeout, Client* client)
+Frame::writeToImpl(Print* os, int timeout, Client* client)
 {
   auto startTime = millis();
-  for (size_t i = 0; i < m_size; i += os.write(&m_data[i], m_size - i)) {
+  for (size_t i = 0; i < m_size; i += os->write(&m_data[i], m_size - i)) {
     if (millis() - startTime > static_cast<unsigned long>(timeout) ||
         (client != nullptr && !client->connected())) {
       return false;

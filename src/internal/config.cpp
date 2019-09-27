@@ -79,6 +79,14 @@ Config::setRgb()
 }
 
 Config&
+Config::setRgb888()
+{
+  m_cfg->pixel_format = PIXFORMAT_RGB888;
+  return *this;
+}
+
+
+Config&
 Config::setYuv()
 {
   m_cfg->pixel_format = PIXFORMAT_YUV422;

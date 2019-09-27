@@ -79,6 +79,7 @@ CameraClass::streamMjpeg(Client& client, const StreamMjpegConfig& cfg)
       break;
     }
     client.print("\r\n--" BOUNDARY "\r\n");
+    yield();
   }
   return nFrames;
 #undef BOUNDARY
