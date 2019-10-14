@@ -3,6 +3,9 @@
 #include <Arduino.h>
 #include <esp_camera.h>
 
+#define BOUNDARY "e8b8c539-047d-4777-a985-fbba6edff11e"
+// #undef BOUNDARY
+
 namespace esp32cam {
 
 CameraClass Camera;
@@ -49,10 +52,7 @@ CameraClass::capture()
   return std::unique_ptr<Frame>(new Frame(fb));
 }
 
-int
-CameraClass::streamMjpeg(Client& client, const StreamMjpegConfig& cfg)
-{
-#define BOUNDARY "e8b8c539-047d-4777-a985-fbba6edff11e"
+int CameraClass::streamMjpeg(Client& client, const StreamMjpegConfig& cfg) {
   client.print("HTTP/1.1 200 OK\r\n"
                "Content-Type: multipart/x-mixed-replace;boundary=" BOUNDARY "\r\n"
                "\r\n");
@@ -82,7 +82,46 @@ CameraClass::streamMjpeg(Client& client, const StreamMjpegConfig& cfg)
     yield();
   }
   return nFrames;
-#undef BOUNDARY
 }
+
+/*
+Cloned function for ASYNCCLIENT
+*/
+int CameraClass::streamMjpeg(AsyncClient& client, const StreamMjpegConfig& cfg) {
+  client.write("HTTP/1.1 200 OK\r\n"
+               "Content-Type: multipart/x-mixed-replace;boundary=" BOUNDARY "\r\n"
+               "\r\n");
+  auto lastCapture = millis();
+  int nFrames;
+  for (nFrames = 0; cfg.maxFrames < 0 || nFrames < cfg.maxFrames; ++nFrames) {
+    auto now = millis();
+    auto sinceLastCapture = now - lastCapture;
+    if (static_cast<int>(sinceLastCapture) < cfg.minInterval) {
+      delay(cfg.minInterval - sinceLastCapture);
+    }
+    lastCapture = millis();
+
+    auto frame = capture();
+    if (frame == nullptr) {
+      break;
+    }
+
+    char szTmp[256];
+    size_t stLen = snprintf_P(szTmp, 256, PSTR(
+	"Content-Type: image/jpeg\r\n"
+	"Content-Length: %d\r\n"
+	"\r\n"), static_cast<int>(frame->size())
+	);
+    client.write((const char*) szTmp, stLen);
+    if (!frame->writeTo(client, cfg.frameTimeout)) {
+      break;
+    }
+    client.write("\r\n--" BOUNDARY "\r\n");
+    yield();
+  }
+  return nFrames;
+}
+
+
 
 } // namespace esp32cam

@@ -39,24 +39,20 @@ Frame::releaseFb()
 }
 
 bool Frame::writeTo(Print& os, int timeout) {
-  return writeToImpl(&os, timeout, nullptr);
-}
-bool Frame::writeTo(Print* os, int timeout) {
   return writeToImpl(os, timeout, nullptr);
 }
 
 bool Frame::writeTo(Client& os, int timeout) {
-  return writeToImpl(&os, timeout, &os);
-}
-bool Frame::writeTo(Client* os, int timeout) {
   return writeToImpl(os, timeout, &os);
 }
 
-bool
-Frame::writeToImpl(Print* os, int timeout, Client* client)
-{
+bool Frame::writeTo(AsyncClient& os, int timeout) {
+  return writeToImpl(timeout, &os);
+}
+
+bool Frame::writeToImpl(Print& os, int timeout, Client* client) {
   auto startTime = millis();
-  for (size_t i = 0; i < m_size; i += os->write(&m_data[i], m_size - i)) {
+  for (size_t i = 0; i < m_size; i += os.write(&m_data[i], m_size - i)) {
     if (millis() - startTime > static_cast<unsigned long>(timeout) ||
         (client != nullptr && !client->connected())) {
       return false;
@@ -65,6 +61,19 @@ Frame::writeToImpl(Print* os, int timeout, Client* client)
   }
   return true;
 }
+
+bool Frame::writeToImpl(int timeout, AsyncClient* client) {
+  auto startTime = millis();
+  for (size_t i = 0; i < m_size; i += client->write((const char*) &m_data[i], m_size - i)) {
+    if (millis() - startTime > static_cast<unsigned long>(timeout) ||
+        (client != nullptr && !client->connected())) {
+      return false;
+    }
+    yield();
+  }
+  return true;
+}
+
 
 bool
 Frame::isJpeg() const

@@ -48,14 +48,17 @@ public:
    *  \pre The camera has been initialized to JPEG mode.
    *  \return number of frames streamed.
    */
-  int
-  streamMjpeg(Client& client, const StreamMjpegConfig& cfg);
-
-  int
-  streamMjpeg(Client& client)
-  {
+  int streamMjpeg(Client& client, const StreamMjpegConfig& cfg);
+  int streamMjpeg(Client& client) {
     return streamMjpeg(client, StreamMjpegConfig());
   }
+
+  int streamMjpeg(AsyncClient& client, const StreamMjpegConfig& cfg);
+  int streamMjpeg(AsyncClient& client) {
+    return streamMjpeg(client, StreamMjpegConfig());
+  }
+
+
 };
 
 extern CameraClass Camera;

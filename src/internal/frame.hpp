@@ -103,9 +103,10 @@ private:
 
   bool writeToImpl(Print& os, int timeout, Client* client);
 
-  bool writeToImpl(int timeout, AsyncClient* client);
-  
+  bool writeToImpl(int timeout, AsyncClient* client); 
+
   void releaseFb();
+
 private:
   class CameraFbT; ///< camera_fb_t
   CameraFbT* m_fb = nullptr;
