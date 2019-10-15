@@ -69,6 +69,8 @@ bool Frame::writeToImpl(int timeout, AsyncClient* client) {
         (client != nullptr && !client->connected())) {
       return false;
     }
+    // Force send now
+    client->send();
     yield();
   }
   return true;
