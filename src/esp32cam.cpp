@@ -42,6 +42,218 @@ CameraClass::changeResolution(const Resolution& resolution, int sleepFor)
   return true;
 }
 
+bool
+CameraClass::changeContrast(int ilevel)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_contrast(sensor, ilevel) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changeBrightness(int ilevel)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_brightness(sensor, ilevel) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changeSaturation(int ilevel)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_saturation(sensor, ilevel) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changeSpecialEffect(int ilevel)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_special_effect(sensor, ilevel) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changeWbMode(int ilevel)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_wb_mode(sensor, ilevel) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changeAeLevels(int ilevel)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_ae_level(sensor, ilevel)) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changAgcGain(int ilevel)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_agc_gain(sensor, ilevel) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changGainceilingSensor(int iGainCeiling)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if ((gainceiling_t)iGainCeiling < GAINCEILING_2X ||
+      (gainceiling_t)iGainCeiling > GAINCEILING_128X) {
+    return false;
+  }
+
+  if (sensor->set_gainceiling(sensor, (gainceiling_t)iGainCeiling) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changeGaincontrol(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_gain_ctrl(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changeColorbar(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_colorbar(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changeWhitebalance(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_whitebal(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changeQuality(int iQuality)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (iQuality < 0 ||
+      iQuality > 63) {
+    return false;
+  }
+
+  if (sensor->set_quality(sensor, iQuality) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changAec2(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_aec2(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changeAecValue(int iValue)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+  
+  if (iValue < 0 ||
+      iValue > 1200) {
+    return false;
+  }
+
+  if (sensor->set_agc_gain(sensor, iValue) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+
 std::unique_ptr<Frame>
 CameraClass::capture()
 {
@@ -52,7 +264,8 @@ CameraClass::capture()
   return std::unique_ptr<Frame>(new Frame(fb));
 }
 
-int CameraClass::streamMjpeg(Client& client, const StreamMjpegConfig& cfg) {
+int 
+CameraClass::streamMjpeg(Client& client, const StreamMjpegConfig& cfg) {
   client.print("HTTP/1.1 200 OK\r\n"
                "Content-Type: multipart/x-mixed-replace;boundary=" BOUNDARY "\r\n"
                "\r\n");
@@ -84,10 +297,8 @@ int CameraClass::streamMjpeg(Client& client, const StreamMjpegConfig& cfg) {
   return nFrames;
 }
 
-/*
-Cloned function for ASYNCCLIENT
-*/
-int CameraClass::streamMjpeg(AsyncClient& client, const StreamMjpegConfig& cfg) {
+int 
+CameraClass::streamMjpeg(AsyncClient& client, const StreamMjpegConfig& cfg) {
   client.write("HTTP/1.1 200 OK\r\n"
                "Content-Type: multipart/x-mixed-replace;boundary=" BOUNDARY "\r\n"
                "\r\n");
@@ -121,7 +332,5 @@ int CameraClass::streamMjpeg(AsyncClient& client, const StreamMjpegConfig& cfg) 
   }
   return nFrames;
 }
-
-
 
 } // namespace esp32cam

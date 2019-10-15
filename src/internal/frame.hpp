@@ -51,7 +51,8 @@ public: // access
    *  \retval true writing completed.
    *  \retval false writing disrupted by timeout.
    */
-  bool writeTo(Print& os, int timeout = 10000);
+  bool 
+  writeTo(Print& os, int timeout = 10000);
 
   /** \brief Write frame buffer to \p os .
    *  \param os output socket.
@@ -67,8 +68,9 @@ public: // access
    *  \retval true writing completed.
    *  \retval false writing disrupted by timeout or socket error.
    */
-  bool writeTo(AsyncClient& os, int timeout = 10000);
-  
+  bool 
+  writeTo(AsyncClient& os, int timeout = 10000);
+
 public: // conversion
   bool isJpeg() const;
 
