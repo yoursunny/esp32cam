@@ -160,6 +160,21 @@ CameraClass::changGainceilingSensor(int iGainCeiling)
 }
 
 bool
+CameraClass::changeAwbGainControl(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_awb_gain(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+
+bool
 CameraClass::changeGaincontrol(int iEnable)
 {
   sensor_t* sensor = esp_camera_sensor_get();

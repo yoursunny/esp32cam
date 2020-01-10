@@ -84,13 +84,19 @@ public:
   changAgcGain(int ilevel);
 
   /** \brief Change Gainceiling
-   *  \param ilevel must be within ENUM gainceiling_t
+   *  \param iGainCeiling must be between GAINCEILING_2X and GAINCEILING_128X
    */
   bool
   changGainceilingSensor(int iGainCeiling);
 
+  /** \brief Enable/Disable Awb GainControl
+   *  \param iEnable must be 0(disable) or 1 (enable)
+   */
+  bool
+  changeAwbGainControl(int iEnable);
+  
   /** \brief Enable/Disable Gaincontrol
-   *  \param iGainCeiling must be between GAINCEILING_2X and GAINCEILING_128X
+   *  \param iEnable must be 0(disable) or 1 (enable)
    */
   bool
   changeGaincontrol(int iEnable);
