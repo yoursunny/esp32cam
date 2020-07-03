@@ -1,6 +1,6 @@
-#include <esp32cam.h>
 #include <WebServer.h>
 #include <WiFi.h>
+#include <esp32cam.h>
 
 const char* WIFI_SSID = "my-ssid";
 const char* WIFI_PASS = "my-pass";
@@ -10,7 +10,8 @@ WebServer server(80);
 static auto loRes = esp32cam::Resolution::find(320, 240);
 static auto hiRes = esp32cam::Resolution::find(800, 600);
 
-void handleBmp()
+void
+handleBmp()
 {
   if (!esp32cam::Camera.changeResolution(loRes)) {
     Serial.println("SET-LO-RES FAIL");
@@ -39,7 +40,8 @@ void handleBmp()
   frame->writeTo(client);
 }
 
-void serveJpg()
+void
+serveJpg()
 {
   auto frame = esp32cam::capture();
   if (frame == nullptr) {
@@ -56,7 +58,8 @@ void serveJpg()
   frame->writeTo(client);
 }
 
-void handleJpgLo()
+void
+handleJpgLo()
 {
   if (!esp32cam::Camera.changeResolution(loRes)) {
     Serial.println("SET-LO-RES FAIL");
@@ -64,7 +67,8 @@ void handleJpgLo()
   serveJpg();
 }
 
-void handleJpgHi()
+void
+handleJpgHi()
 {
   if (!esp32cam::Camera.changeResolution(hiRes)) {
     Serial.println("SET-HI-RES FAIL");
@@ -72,13 +76,15 @@ void handleJpgHi()
   serveJpg();
 }
 
-void handleJpg()
+void
+handleJpg()
 {
   server.sendHeader("Location", "/cam-hi.jpg");
   server.send(302, "", "");
 }
 
-void handleMjpeg()
+void
+handleMjpeg()
 {
   if (!esp32cam::Camera.changeResolution(hiRes)) {
     Serial.println("SET-HI-RES FAIL");
@@ -96,7 +102,8 @@ void handleMjpeg()
   Serial.printf("STREAM END %dfrm %0.2ffps\n", res, 1000.0 * res / duration);
 }
 
-void setup()
+void
+setup()
 {
   Serial.begin(115200);
   Serial.println();
@@ -136,7 +143,8 @@ void setup()
   server.begin();
 }
 
-void loop()
+void
+loop()
 {
   server.handleClient();
 }

@@ -16,26 +16,22 @@ class Frame
 public: // access
   ~Frame();
 
-  uint8_t*
-  data() const
+  uint8_t* data() const
   {
     return m_data;
   }
 
-  size_t
-  size() const
+  size_t size() const
   {
     return m_size;
   }
 
-  int
-  getWidth() const
+  int getWidth() const
   {
     return m_width;
   }
 
-  int
-  getHeight() const
+  int getHeight() const
   {
     return m_height;
   }
@@ -46,8 +42,7 @@ public: // access
    *  \retval true writing completed.
    *  \retval false writing disrupted by timeout.
    */
-  bool
-  writeTo(Print& os, int timeout = 10000);
+  bool writeTo(Print& os, int timeout = 10000);
 
   /** \brief Write frame buffer to \p os .
    *  \param os output socket.
@@ -55,41 +50,33 @@ public: // access
    *  \retval true writing completed.
    *  \retval false writing disrupted by timeout or socket error.
    */
-  bool
-  writeTo(Client& os, int timeout = 10000);
+  bool writeTo(Client& os, int timeout = 10000);
 
 public: // conversion
-  bool
-  isJpeg() const;
+  bool isJpeg() const;
 
   /** \brief Convert frame to JPEG.
    *  \param quality JPEG quality between 0 (worst) and 100 (best).
    */
-  bool
-  toJpeg(int quality);
+  bool toJpeg(int quality);
 
-  bool
-  isBmp() const
+  bool isBmp() const
   {
     return m_pixFormat == PIXFORMAT_BMP;
   }
 
   /** \brief Convert frame to BMP.
    */
-  bool
-  toBmp();
+  bool toBmp();
 
 private:
   Frame();
 
-  explicit
-  Frame(void* fb);
+  explicit Frame(void* fb);
 
-  bool
-  writeToImpl(Print& os, int timeout, Client* client);
+  bool writeToImpl(Print& os, int timeout, Client* client);
 
-  void
-  releaseFb();
+  void releaseFb();
 
 private:
   class CameraFbT; ///< camera_fb_t
@@ -99,7 +86,8 @@ private:
   int m_width = -1;
   int m_height = -1;
 
-  enum {
+  enum
+  {
     PIXFORMAT_BMP = -101,
   };
   int m_pixFormat = -1;

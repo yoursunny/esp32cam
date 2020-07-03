@@ -16,8 +16,7 @@ convertJpegQuality(int quality)
 } // namespace detail
 
 class Config::CameraConfigT : public camera_config_t
-{
-};
+{};
 
 Config::Config()
   : m_cfg(new CameraConfigT)

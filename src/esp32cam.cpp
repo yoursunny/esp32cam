@@ -73,7 +73,8 @@ CameraClass::streamMjpeg(Client& client, const StreamMjpegConfig& cfg)
 
     client.printf("Content-Type: image/jpeg\r\n"
                   "Content-Length: %d\r\n"
-                  "\r\n", static_cast<int>(frame->size()));
+                  "\r\n",
+                  static_cast<int>(frame->size()));
     if (!frame->writeTo(client, cfg.frameTimeout)) {
       break;
     }

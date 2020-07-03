@@ -23,38 +23,31 @@ public:
 
   ~Config();
 
-  Config&
-  setPins(const Pins& pins);
+  Config& setPins(const Pins& pins);
 
-  Config&
-  setResolution(const Resolution& resolution);
+  Config& setResolution(const Resolution& resolution);
 
   /** \brief Set number of frame buffers.
    *  \param n >=1, having more frame buffers allows better streaming fps.
    */
-  Config&
-  setBufferCount(int n);
+  Config& setBufferCount(int n);
 
   /** \brief Change pixel format to RGB565.
    */
-  Config&
-  setRgb();
+  Config& setRgb();
 
   /** \brief Change pixel format to YUV422.
    */
-  Config&
-  setYuv();
+  Config& setYuv();
 
   /** \brief Change pixel format to grayscale.
    */
-  Config&
-  setGrayscale();
+  Config& setGrayscale();
 
   /** \brief Change pixel format to JPEG.
    *  \param quality JPEG quality between 0 (worst) and 100 (best).
    */
-  Config&
-  setJpeg(int quality);
+  Config& setJpeg(int quality);
 
 private:
   class CameraConfigT; ///< camera_config_t

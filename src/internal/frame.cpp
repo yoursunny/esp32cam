@@ -7,8 +7,7 @@
 namespace esp32cam {
 
 struct Frame::CameraFbT : public camera_fb_t
-{
-};
+{};
 
 Frame::Frame() = default;
 
@@ -19,8 +18,7 @@ Frame::Frame(void* fb)
   , m_width(m_fb->width)
   , m_height(m_fb->height)
   , m_pixFormat(m_fb->format)
-{
-}
+{}
 
 Frame::~Frame()
 {
@@ -77,7 +75,8 @@ Frame::toJpeg(int quality)
 {
   uint8_t* data;
   size_t size;
-  bool ok = fmt2jpg(m_data, m_size, m_width, m_height, static_cast<pixformat_t>(m_pixFormat), detail::convertJpegQuality(quality), &data, &size);
+  bool ok = fmt2jpg(m_data, m_size, m_width, m_height, static_cast<pixformat_t>(m_pixFormat),
+                    detail::convertJpegQuality(quality), &data, &size);
   if (!ok) {
     return false;
   }
@@ -93,7 +92,8 @@ Frame::toBmp()
 {
   uint8_t* data;
   size_t size;
-  bool ok = fmt2bmp(m_data, m_size, m_width, m_height, static_cast<pixformat_t>(m_pixFormat), &data, &size);
+  bool ok =
+    fmt2bmp(m_data, m_size, m_width, m_height, static_cast<pixformat_t>(m_pixFormat), &data, &size);
   if (!ok) {
     return false;
   }

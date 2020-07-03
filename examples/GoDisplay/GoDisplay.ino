@@ -1,14 +1,15 @@
 #include "SpiRamOStream.hpp"
 
 #include <HTTPClient.h>
-#include <odroid_go.h>
 #include <WiFi.h>
+#include <odroid_go.h>
 
 const char* WIFI_SSID = "my-ssid";
 const char* WIFI_PASS = "my-pass";
 const char* CAM_SERVER = "http://192.0.2.1";
 
-void setup()
+void
+setup()
 {
   GO.begin(115200);
 
@@ -20,7 +21,8 @@ void setup()
   }
 }
 
-void loop()
+void
+loop()
 {
   WiFiClient tcp;
   HTTPClient http;
