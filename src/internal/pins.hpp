@@ -32,6 +32,18 @@ constexpr Pins AiThinker{
   XCLK: 0, PCLK: 22, VSYNC: 25, HREF: 23, SDA: 26, SCL: 27, RESET: -1, PWDN: 32,
 };
 
+constexpr Pins M5Camera{
+  D0: 32, D1: 35, D2: 34, D3: 5, D4: 39, D5: 18, D6: 36, D7: 19,
+  XCLK: 27, PCLK: 21, VSYNC: 25, HREF: 26, SDA: 22, SCL: 23, RESET: 15, PWDN: -1
+};
+
+constexpr Pins M5CameraLED{
+  // Red LED on GPIO 14, tally light when tied to PWDN
+  D0: 32, D1: 35, D2: 34, D3: 5, D4: 39, D5: 18, D6: 36, D7: 19,
+  XCLK: 27, PCLK: 21, VSYNC: 25, HREF: 26, SDA: 22, SCL: 23, RESET: 15, PWDN: 14
+};
+
+
 } // namespace pins
 } // namespace esp32cam
 
