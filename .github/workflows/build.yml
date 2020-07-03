@@ -1,0 +1,30 @@
+name: build
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: arduino/setup-arduino-cli@v1.0.0
+      - name: Install Arduino Platform
+        run: |
+          arduino-cli version
+          arduino-cli core update-index --additional-urls $ARDUINO_CORE_URI
+          arduino-cli core install esp32:esp32 --additional-urls $ARDUINO_CORE_URI
+        env:
+          ARDUINO_CORE_URI: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Install esptool
+        run: |
+          python -m pip install --upgrade pip
+          pip install esptool
+      - name: Link Library
+        run: |
+          mkdir -p $HOME/Arduino/libraries
+          ln -s $GITHUB_WORKSPACE $HOME/Arduino/libraries/esp32cam
+      - name: Compile Examples
+        run: |
+          arduino-cli compile -b esp32:esp32:esp32wrover ./examples/WifiCam
