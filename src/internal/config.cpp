@@ -108,4 +108,11 @@ Config::setJpeg(int quality)
   return *this;
 }
 
+Config&
+Config::setFreqHz(int freq)
+{
+  m_cfg->xclk_freq_hz  = freq;
+  return *this;
+}
+
 } // namespace esp32cam

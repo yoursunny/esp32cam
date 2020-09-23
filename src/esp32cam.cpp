@@ -268,6 +268,33 @@ CameraClass::changeAecValue(int iValue)
     return false;
 }
 
+bool
+CameraClass::changHMirror(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_hmirror(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changVFlip(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_vflip(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
 
 std::unique_ptr<Frame>
 CameraClass::capture()

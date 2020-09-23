@@ -54,6 +54,12 @@ public:
    */
   Config& setJpeg(int quality);
 
+  /** \brief Change xclk freq hz
+   *  \param Change xclk freq hz default 20000000
+   */
+  Config&
+  setFreqHz(int freq);
+
 private:
   class CameraConfigT; ///< camera_config_t
   CameraConfigT* m_cfg;

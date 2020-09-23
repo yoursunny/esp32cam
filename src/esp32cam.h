@@ -129,7 +129,19 @@ public:
   */
   bool
   changAec2(int iEnable);
- 
+
+  /** \brief Enable/Disable horizontal mirror
+   *  \param iEnable must be 0(disable) or 1 (enable)
+  */
+  bool
+  changHMirror(int iEnable);
+
+  /** \brief Enable/Disable vertical mirror
+   *  \param iEnable must be 0(disable) or 1 (enable)
+  */
+  bool
+  changVFlip(int iEnable);
+  
   /** \brief Capture a frame of picture.
    */
   std::unique_ptr<Frame>
