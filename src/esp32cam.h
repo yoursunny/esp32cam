@@ -8,6 +8,16 @@
 
 namespace esp32cam {
 
+struct StreamMjpegConfig
+{
+/// minimum interval between frame captures.
+int minInterval = 0;
+/// maximum number of frames before disconnecting.
+int maxFrames = -1;
+/// time limit of writing one frame in millis.
+int frameTimeout = 10000;
+};
+
 class CameraClass
 {
 public:
@@ -28,6 +38,13 @@ public:
    */
   bool
   changeResolution(const Resolution& resolution, int sleepFor = 500);
+
+  /** \brief Change camera resolution.
+   *  \pre Change Camera Frequence Clock
+   *  \param iMhz new Frequence, must be in MHZ
+   */
+  bool
+  changeFrequence(int iMhz);
 
   /** \brief Change Sensor Contrast level
   * must be -2 to +2, default 0
@@ -76,6 +93,12 @@ public:
    */
   bool
   changeAeLevels(int ilevel);
+  
+  /** \brief Enable/Disable  AEC (Auto Exposure Control)
+   *  \param iEnable must be 0(disable) or 1 (enable)
+   */
+  bool
+  changAutoExposurecontrol(int iEnable);
 
   /** \brief Change AGC Gain
    *  \param ilevel must be >= 0 and <= 30, default 30
@@ -141,21 +164,47 @@ public:
   */
   bool
   changVFlip(int iEnable);
+
+  /** \brief Enable/Disable black pixel correction
+   *  \param iEnable must be 0(disable) or 1 (enable)
+  */
+  bool
+  changBPC(int iEnable);
+
+  /** \brief Enable/Disable white pixel correction
+   *  \param iEnable must be 0(disable) or 1 (enable)
+  */
+  bool
+  changWPC(int iEnable);
+
+  /** \brief Enable/Disable Denoise Control
+   *  \param iEnable must be 0(disable) or 1 (enable)
+  */
+  bool
+  changDenoise(int iEnable);
+
+  /** \brief Enable/Disable Lenc Correction
+   *  \param iEnable must be 0(disable) or 1 (enable)
+  */
+  bool
+  changLenc(int iEnable);
+
+  /** \brief Enable/Disable RAW Gamma
+   *  \param iEnable must be 0(disable) or 1 (enable)
+  */
+  bool
+  changRawGMA(int iEnable);
+  
+  /** \brief Enable/Disable DCW
+   *  \param iEnable must be 0(disable) or 1 (enable)
+  */
+  bool
+  changDcw(int iEnable);
   
   /** \brief Capture a frame of picture.
    */
   std::unique_ptr<Frame>
   capture();
-
-  struct StreamMjpegConfig
-  {
-    /// minimum interval between frame captures.
-    int minInterval = 0;
-    /// maximum number of frames before disconnecting.
-    int maxFrames = -1;
-    /// time limit of writing one frame in millis.
-    int frameTimeout = 10000;
-  };
 
   /** \brief Stream Motion JPEG.
    *  \pre The camera has been initialized to JPEG mode.

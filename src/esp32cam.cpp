@@ -43,6 +43,25 @@ CameraClass::changeResolution(const Resolution& resolution, int sleepFor)
 }
 
 bool
+CameraClass::changeFrequence(int iMhz)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+  
+  int iLedTimer = 0;
+  int ret = 0;
+  sensor->xclk_freq_hz = iMhz * 1000000U;
+//  ret = xclk_timer_conf(iLedTimer, sensor->xclk_freq_hz);
+  // if (sensor->set_xclk(sensor, iLedTimer, iMhz) != 0) {
+  if (ret  != 0) {
+    return false;
+  } else 
+	return true;
+}
+
+bool
 CameraClass::changeContrast(int ilevel)
 {
   sensor_t* sensor = esp_camera_sensor_get();
@@ -158,7 +177,7 @@ CameraClass::changGainceilingSensor(int iGainCeiling)
   } else
     return false;
 }
-
+   
 bool
 CameraClass::changeAwbGainControl(int iEnable)
 {
@@ -262,7 +281,7 @@ CameraClass::changeAecValue(int iValue)
     return false;
   }
 
-  if (sensor->set_agc_gain(sensor, iValue) == 0) {
+  if (sensor->set_aec_value(sensor, iValue) == 0) {
     return true;
   } else
     return false;
@@ -295,6 +314,105 @@ CameraClass::changVFlip(int iEnable)
   } else
     return false;
 }
+
+bool
+CameraClass::changBPC(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_bpc(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changWPC(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_wpc(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changDenoise(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_denoise(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changLenc(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_lenc(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changRawGMA(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_raw_gma(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changAutoExposurecontrol(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_exposure_ctrl(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changDcw(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  if (sensor->set_dcw(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
 
 std::unique_ptr<Frame>
 CameraClass::capture()
@@ -346,6 +464,7 @@ CameraClass::streamMjpeg(AsyncClient& client, const StreamMjpegConfig& cfg) {
                "\r\n");
   auto lastCapture = millis();
   int nFrames;
+  int nNullFrames = 0;
   for (nFrames = 0; cfg.maxFrames < 0 || nFrames < cfg.maxFrames; ++nFrames) {
     auto now = millis();
     auto sinceLastCapture = now - lastCapture;
@@ -356,8 +475,16 @@ CameraClass::streamMjpeg(AsyncClient& client, const StreamMjpegConfig& cfg) {
 
     auto frame = capture();
     if (frame == nullptr) {
-      break;
-    }
+	  nNullFrames++;
+	  if (nNullFrames > 10)
+		  break;
+	  else {
+		  // delay(100); // Delay short period!
+		  continue;
+	  }
+    } else {
+		nNullFrames = 0;
+	}
 
     char szTmp[256];
     size_t stLen = snprintf_P(szTmp, 256, PSTR(
@@ -365,10 +492,14 @@ CameraClass::streamMjpeg(AsyncClient& client, const StreamMjpegConfig& cfg) {
 	"Content-Length: %d\r\n"
 	"\r\n"), static_cast<int>(frame->size())
 	);
-    client.write((const char*) szTmp, stLen);
-    if (!frame->writeTo(client, cfg.frameTimeout)) {
-      break;
-    }
+	if (!client.disconnected()) {
+		client.write((const char*) szTmp, stLen);
+		if (!frame->writeTo(client, cfg.frameTimeout)) {
+		  break;
+		}
+	} else {
+	  break;
+	}
     client.write("\r\n--" BOUNDARY "\r\n");
     yield();
   }

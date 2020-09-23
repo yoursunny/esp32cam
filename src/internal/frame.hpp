@@ -93,11 +93,7 @@ public: // conversion
   /** \brief Convert frame to BMP.
    */
   bool toBmp();
-/** \we converted the buffer ourself outside the lib and need to set it!
-   */
-  void 
-  setData(uint8_t* newdata, size_t newsize, bool bIsBmp);
-
+  
   /** \we converted the buffer ourself outside the lib and need to set it!
    */
   void 
