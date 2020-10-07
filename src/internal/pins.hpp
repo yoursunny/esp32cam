@@ -112,7 +112,7 @@ constexpr Pins TTGO{
   RESET: -1,
   PWDN: -1,
 };
-  
+
 } // namespace pins
 } // namespace esp32cam
 
