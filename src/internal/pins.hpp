@@ -92,7 +92,7 @@ constexpr Pins M5CameraLED{
   PWDN: 14,
 };
 
-/** Pin definition for TTGO ESP32-CAM.
+/** \brief Pin definition for TTGO ESP32-CAM.
  */
 constexpr Pins TTGO{
   D0: 5,
