@@ -13,13 +13,15 @@ CameraClass Camera;
 bool
 CameraClass::begin(const Config& config)
 {
-  return esp_camera_init(reinterpret_cast<const camera_config_t*>(config.m_cfg)) == ESP_OK;
+  lastEspErr = esp_camera_init(reinterpret_cast<const camera_config_t*>(config.m_cfg));
+  return (lastEspErr == ESP_OK ? true : false);
 }
 
 bool
 CameraClass::end()
 {
-  return esp_camera_deinit() == ESP_OK;
+  lastEspErr = esp_camera_deinit();
+  return (lastEspErr == ESP_OK ? true : false);
 }
 
 bool

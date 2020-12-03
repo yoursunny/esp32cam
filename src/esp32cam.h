@@ -225,6 +225,10 @@ public:
     return streamMjpeg(client, StreamMjpegConfig());
   }
 
+  /** \brief Return value for esp API calls
+   *  \Store last api return value here useful for error handling!
+   */
+  esp_err_t lastEspErr; 
 
 };
 
