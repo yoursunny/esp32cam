@@ -79,6 +79,14 @@ Config::setRgb()
 }
 
 Config&
+Config::setRgb888()
+{
+  m_cfg->pixel_format = PIXFORMAT_RGB888;
+  return *this;
+}
+
+
+Config&
 Config::setYuv()
 {
   m_cfg->pixel_format = PIXFORMAT_YUV422;
@@ -97,6 +105,13 @@ Config::setJpeg(int quality)
 {
   m_cfg->pixel_format = PIXFORMAT_JPEG;
   m_cfg->jpeg_quality = detail::convertJpegQuality(quality);
+  return *this;
+}
+
+Config&
+Config::setFreqHz(int freq)
+{
+  m_cfg->xclk_freq_hz  = freq;
   return *this;
 }
 

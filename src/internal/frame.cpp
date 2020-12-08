@@ -38,36 +38,61 @@ Frame::releaseFb()
   }
 }
 
-bool
-Frame::writeTo(Print& os, int timeout)
-{
+bool 
+Frame::writeTo(Print& os, int timeout) {
   return writeToImpl(os, timeout, nullptr);
 }
 
-bool
-Frame::writeTo(Client& os, int timeout)
-{
+bool 
+Frame::writeTo(Client& os, int timeout) {
   return writeToImpl(os, timeout, &os);
 }
 
-bool
-Frame::writeToImpl(Print& os, int timeout, Client* client)
-{
+bool 
+Frame::writeTo(AsyncClient& os, int timeout) {
+  return writeToImpl(timeout, &os);
+}
+
+bool 
+Frame::writeToImpl(Print& os, int timeout, Client* client) {
   auto startTime = millis();
   for (size_t i = 0; i < m_size; i += os.write(&m_data[i], m_size - i)) {
     if (millis() - startTime > static_cast<unsigned long>(timeout) ||
         (client != nullptr && !client->connected())) {
       return false;
     }
-    yield();
   }
   return true;
 }
+
+bool 
+Frame::writeToImpl(int timeout, AsyncClient* client) {
+  auto startTime = millis();
+  for (size_t i = 0; i < m_size; i += client->write((const char*) &m_data[i], m_size - i)) {
+    if (millis() - startTime > static_cast<unsigned long>(timeout) ||
+        (client != nullptr && !client->connected())) {
+      return false;
+    }
+    // Force send now
+    client->send();
+    taskYIELD();
+  }
+  return true;
+}
+
 
 bool
 Frame::isJpeg() const
 {
   return m_pixFormat == PIXFORMAT_JPEG;
+}
+
+void 
+Frame::setData(uint8_t* newdata, size_t newsize, bool bIsBmp) {
+  releaseFb();
+  m_data = newdata;
+  m_size = newsize;
+  m_pixFormat = (bIsBmp ? PIXFORMAT_BMP : PIXFORMAT_JPEG);
 }
 
 bool

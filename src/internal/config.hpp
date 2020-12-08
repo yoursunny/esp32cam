@@ -36,6 +36,11 @@ public:
    */
   Config& setRgb();
 
+  /** \brief Change pixel format to RGB888.
+   */
+  Config&
+  setRgb888();
+
   /** \brief Change pixel format to YUV422.
    */
   Config& setYuv();
@@ -48,6 +53,12 @@ public:
    *  \param quality JPEG quality between 0 (worst) and 100 (best).
    */
   Config& setJpeg(int quality);
+
+  /** \brief Change xclk freq hz
+   *  \param Change xclk freq hz default 20000000
+   */
+  Config&
+  setFreqHz(int freq);
 
 private:
   class CameraConfigT; ///< camera_config_t
