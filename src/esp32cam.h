@@ -16,6 +16,9 @@ int minInterval = 0;
 int maxFrames = -1;
 /// time limit of writing one frame in millis.
 int frameTimeout = 10000;
+/// Abort flags
+bool bAbort = false;
+
 };
 
 class CameraClass
@@ -220,10 +223,7 @@ public:
    *  \pre The camera has been initialized to JPEG mode.
    *  \return number of frames streamed.
    */
-  int streamMjpeg(AsyncClient& client, const StreamMjpegConfig& cfg);
-  int streamMjpeg(AsyncClient& client) {
-    return streamMjpeg(client, StreamMjpegConfig());
-  }
+  int streamMjpeg(AsyncClient& client, const StreamMjpegConfig* cfg);
 
   /** \brief Return value for esp API calls
    *  \Store last api return value here useful for error handling!

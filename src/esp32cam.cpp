@@ -454,24 +454,23 @@ CameraClass::streamMjpeg(Client& client, const StreamMjpegConfig& cfg) {
       break;
     }
     client.print("\r\n--" BOUNDARY "\r\n");
-    yield();
   }
   return nFrames;
 }
 
 int 
-CameraClass::streamMjpeg(AsyncClient& client, const StreamMjpegConfig& cfg) {
+CameraClass::streamMjpeg(AsyncClient& client, const StreamMjpegConfig* cfg) {
   client.write("HTTP/1.1 200 OK\r\n"
                "Content-Type: multipart/x-mixed-replace;boundary=" BOUNDARY "\r\n"
                "\r\n");
   auto lastCapture = millis();
   int nFrames;
   int nNullFrames = 0;
-  for (nFrames = 0; cfg.maxFrames < 0 || nFrames < cfg.maxFrames; ++nFrames) {
+  for (nFrames = 0; cfg->maxFrames < 0 || nFrames < cfg->maxFrames; ++nFrames) {
     auto now = millis();
     auto sinceLastCapture = now - lastCapture;
-    if (static_cast<int>(sinceLastCapture) < cfg.minInterval) {
-      delay(cfg.minInterval - sinceLastCapture);
+    if (static_cast<int>(sinceLastCapture) < cfg->minInterval) {
+      delay(cfg->minInterval - sinceLastCapture);
     }
     lastCapture = millis();
 
@@ -481,7 +480,6 @@ CameraClass::streamMjpeg(AsyncClient& client, const StreamMjpegConfig& cfg) {
 	  if (nNullFrames > 10)
 		  break;
 	  else {
-		  // delay(100); // Delay short period!
 		  continue;
 	  }
     } else {
@@ -496,14 +494,17 @@ CameraClass::streamMjpeg(AsyncClient& client, const StreamMjpegConfig& cfg) {
 	);
 	if (!client.disconnected()) {
 		client.write((const char*) szTmp, stLen);
-		if (!frame->writeTo(client, cfg.frameTimeout)) {
+		if (!frame->writeTo(client, cfg->frameTimeout)) {
 		  break;
 		}
 	} else {
 	  break;
 	}
     client.write("\r\n--" BOUNDARY "\r\n");
-    yield();
+    taskYIELD();
+	
+	if (cfg->bAbort)
+		break;
   }
   return nFrames;
 }

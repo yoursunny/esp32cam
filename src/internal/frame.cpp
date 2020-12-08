@@ -61,7 +61,6 @@ Frame::writeToImpl(Print& os, int timeout, Client* client) {
         (client != nullptr && !client->connected())) {
       return false;
     }
-    yield();
   }
   return true;
 }
@@ -76,7 +75,7 @@ Frame::writeToImpl(int timeout, AsyncClient* client) {
     }
     // Force send now
     client->send();
-    yield();
+    taskYIELD();
   }
   return true;
 }
