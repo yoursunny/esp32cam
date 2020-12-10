@@ -1,3 +1,7 @@
+/** \mainpage esp8266ndn
+ *
+ *  https://github.com/yoursunny/esp32cam
+ */
 #ifndef ESP32CAM_H
 #define ESP32CAM_H
 
@@ -11,20 +15,19 @@ namespace esp32cam {
 class CameraClass
 {
 public:
-  /** \brief Enable camera.
-   */
+  /** @brief Enable camera. */
   bool
   begin(const Config& config);
 
-  /** \brief Disable camera.
-   */
+  /** @brief Disable camera. */
   bool
   end();
 
-  /** \brief Change camera resolution.
-   *  \pre Initial resolution is higher than specified resolution.
-   *  \param resolution new resolution
-   *  \param sleepFor how long to wait for stabilization (millis)
+  /**
+   * @brief Change camera resolution.
+   * @pre Initial resolution is higher than specified resolution.
+   * @param resolution new resolution.
+   * @param sleepFor how long to wait for stabilization (millis).
    */
   bool
   changeResolution(const Resolution& resolution, int sleepFor = 500);
@@ -36,17 +39,18 @@ public:
 
   struct StreamMjpegConfig
   {
-    /// minimum interval between frame captures.
+    /** @brief minimum interval between frame captures. */
     int minInterval = 0;
-    /// maximum number of frames before disconnecting.
+    /** @brief maximum number of frames before disconnecting. */
     int maxFrames = -1;
-    /// time limit of writing one frame in millis.
+    /** @brief time limit of writing one frame in millis. */
     int frameTimeout = 10000;
   };
 
-  /** \brief Stream Motion JPEG.
-   *  \pre The camera has been initialized to JPEG mode.
-   *  \return number of frames streamed.
+  /**
+   * @brief Stream Motion JPEG.
+   * @pre The camera has been initialized to JPEG mode.
+   * @return number of frames streamed.
    */
   int
   streamMjpeg(Client& client, const StreamMjpegConfig& cfg);

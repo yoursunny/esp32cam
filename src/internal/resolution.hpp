@@ -3,25 +3,23 @@
 
 namespace esp32cam {
 
-/** \brief Picture width and height.
- */
+/** @brief Picture width and height. */
 class Resolution
 {
 public:
-  /** \brief Determine if this resolution is valid.
-   */
+  /** @brief Determine if this resolution is valid. */
   bool isValid() const;
 
   int getWidth() const;
 
   int getHeight() const;
 
-  /** \brief Find a resolution that satisfies given constraints.
-   */
+  /** @brief Find a resolution that satisfies given constraints. */
   static Resolution find(int minWidth, int minHeight);
 
-  /** \brief Convert to framesize_t (internal use).
-   *  \tparam T framesize_t
+  /**
+   * @brief Convert to framesize_t (internal use).
+   * @tparam T framesize_t
    */
   template<typename T>
   T as() const

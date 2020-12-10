@@ -3,8 +3,7 @@
 
 namespace esp32cam {
 
-/** \brief Camera pins definition.
- */
+/** @brief Camera pins definition. */
 struct Pins
 {
   int D0;
@@ -27,8 +26,7 @@ struct Pins
 
 namespace pins {
 
-/** \brief Pin definition for AI Thinker ESP32-CAM.
- */
+/** @brief Pin definition for AI Thinker ESP32-CAM. */
 constexpr Pins AiThinker{
   D0: 5,
   D1: 18,
@@ -48,8 +46,7 @@ constexpr Pins AiThinker{
   PWDN: 32,
 };
 
-/** \brief Pin definition for M5Stack M5Camera.
- */
+/** @brief Pin definition for M5Stack M5Camera. */
 constexpr Pins M5Camera{
   D0: 32,
   D1: 35,
@@ -69,9 +66,10 @@ constexpr Pins M5Camera{
   PWDN: -1,
 };
 
-/** \brief Pin definition for M5Stack M5Camera with LED.
+/**
+ * @brief Pin definition for M5Stack M5Camera with LED.
  *
- *  Red LED on GPIO 14, tally light when tied to PWDN
+ * Red LED on GPIO 14, tally light when tied to PWDN
  */
 constexpr Pins M5CameraLED{
   D0: 32,

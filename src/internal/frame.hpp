@@ -9,8 +9,7 @@ class Print;
 
 namespace esp32cam {
 
-/** \brief A frame of picture.
- */
+/** @brief A frame of picture. */
 class Frame
 {
 public: // access
@@ -36,27 +35,30 @@ public: // access
     return m_height;
   }
 
-  /** \brief Write frame buffer to \p os .
-   *  \param os output stream.
-   *  \param timeout total time limit in millis.
-   *  \retval true writing completed.
-   *  \retval false writing disrupted by timeout.
+  /**
+   * @brief Write frame buffer to \p os .
+   * @param os output stream.
+   * @param timeout total time limit in millis.
+   * @retval true writing completed.
+   * @retval false writing disrupted by timeout.
    */
   bool writeTo(Print& os, int timeout = 10000);
 
-  /** \brief Write frame buffer to \p os .
-   *  \param os output socket.
-   *  \param timeout total time limit in millis.
-   *  \retval true writing completed.
-   *  \retval false writing disrupted by timeout or socket error.
+  /**
+   * @brief Write frame buffer to \p os .
+   * @param os output socket.
+   * @param timeout total time limit in millis.
+   * @retval true writing completed.
+   * @retval false writing disrupted by timeout or socket error.
    */
   bool writeTo(Client& os, int timeout = 10000);
 
 public: // conversion
   bool isJpeg() const;
 
-  /** \brief Convert frame to JPEG.
-   *  \param quality JPEG quality between 0 (worst) and 100 (best).
+  /**
+   * @brief Convert frame to JPEG.
+   * @param quality JPEG quality between 0 (worst) and 100 (best).
    */
   bool toJpeg(int quality);
 
@@ -65,8 +67,7 @@ public: // conversion
     return m_pixFormat == PIXFORMAT_BMP;
   }
 
-  /** \brief Convert frame to BMP.
-   */
+  /** @brief Convert frame to BMP. */
   bool toBmp();
 
 private:

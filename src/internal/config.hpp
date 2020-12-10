@@ -7,15 +7,13 @@
 namespace esp32cam {
 namespace detail {
 
-/** \brief Convert JPEG quality from 0-100 scale to 63-0 scale.
- */
+/** @brief Convert JPEG quality from 0-100 scale to 63-0 scale. */
 int
 convertJpegQuality(int quality);
 
 } // namespace detail
 
-/** \brief Camera configuration.
- */
+/** @brief Camera configuration. */
 class Config
 {
 public:
@@ -27,25 +25,24 @@ public:
 
   Config& setResolution(const Resolution& resolution);
 
-  /** \brief Set number of frame buffers.
-   *  \param n >=1, having more frame buffers allows better streaming fps.
+  /**
+   * @brief Set number of frame buffers.
+   * @param n >=1, having more frame buffers allows better streaming fps.
    */
   Config& setBufferCount(int n);
 
-  /** \brief Change pixel format to RGB565.
-   */
+  /** @brief Change pixel format to RGB565. */
   Config& setRgb();
 
-  /** \brief Change pixel format to YUV422.
-   */
+  /** @brief Change pixel format to YUV422. */
   Config& setYuv();
 
-  /** \brief Change pixel format to grayscale.
-   */
+  /** @brief Change pixel format to grayscale. */
   Config& setGrayscale();
 
-  /** \brief Change pixel format to JPEG.
-   *  \param quality JPEG quality between 0 (worst) and 100 (best).
+  /**
+   * @brief Change pixel format to JPEG.
+   * @param quality JPEG quality between 0 (worst) and 100 (best).
    */
   Config& setJpeg(int quality);
 

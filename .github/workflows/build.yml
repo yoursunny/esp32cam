@@ -42,3 +42,15 @@ jobs:
       - name: compile GoDisplay example
         run: |
           arduino-cli compile -b esp32:esp32:odroid_esp32 ./examples/GoDisplay
+      - name: build docs
+        run: |
+          sudo apt-get install doxygen
+          docs/build.sh
+      - name: deploy docs
+        uses: South-Paw/action-netlify-deploy@v1.0.4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          netlify-site-id: 7de100ca-e942-419d-af2c-18e6c528b96e
+          build-dir: ./docs/html/
+        if: ${{ github.repository == 'yoursunny/esp32cam' && github.event_name == 'push' }}
