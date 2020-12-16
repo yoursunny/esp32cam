@@ -36,7 +36,7 @@ public: // access
   }
 
   /**
-   * @brief Write frame buffer to \p os .
+   * @brief Write frame buffer to @p os .
    * @param os output stream.
    * @param timeout total time limit in millis.
    * @retval true writing completed.
@@ -45,7 +45,7 @@ public: // access
   bool writeTo(Print& os, int timeout = 10000);
 
   /**
-   * @brief Write frame buffer to \p os .
+   * @brief Write frame buffer to @p os .
    * @param os output socket.
    * @param timeout total time limit in millis.
    * @retval true writing completed.

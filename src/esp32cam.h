@@ -1,7 +1,9 @@
-/** \mainpage esp8266ndn
+/**
+ * @mainpage esp32cam
  *
- *  https://github.com/yoursunny/esp32cam
+ * https://github.com/yoursunny/esp32cam
  */
+
 #ifndef ESP32CAM_H
 #define ESP32CAM_H
 
@@ -32,8 +34,7 @@ public:
   bool
   changeResolution(const Resolution& resolution, int sleepFor = 500);
 
-  /** \brief Capture a frame of picture.
-   */
+  /** @brief Capture a frame of picture. */
   std::unique_ptr<Frame>
   capture();
 
@@ -62,8 +63,10 @@ public:
   }
 };
 
+/** @brief ESP32 camera API. */
 extern CameraClass Camera;
 
+/** @brief Capture a frame with the camera. */
 inline std::unique_ptr<Frame>
 capture()
 {
