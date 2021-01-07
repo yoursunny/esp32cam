@@ -6,7 +6,7 @@
 It is a wrapper of [esp32-camera library](https://github.com/espressif/esp32-camera).
 This library has been tested with AI Thinker [ESP32-CAM](http://wiki.ai-thinker.com/esp32-cam) board and OV2640 camera.
 
-* [Doxygen documentation](https://esp32cam.yoursunny.cn/)
+* [Doxygen documentation](https://esp32cam.yoursunny.dev/)
 * [#esp32cam on Twitter](https://twitter.com/hashtag/esp32cam)
 
 ![esp32cam logo](docs/logo.svg)
