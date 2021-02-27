@@ -16,7 +16,7 @@ Resolution::getWidth() const
   if (!isValid()) {
     return -1;
   }
-  return ::resolution[m_frameSize][0];
+  return ::resolution[m_frameSize].width;
 }
 
 int
@@ -25,7 +25,7 @@ Resolution::getHeight() const
   if (!isValid()) {
     return -1;
   }
-  return ::resolution[m_frameSize][1];
+  return ::resolution[m_frameSize].height;
 }
 
 Resolution
