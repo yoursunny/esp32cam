@@ -1,21 +1,30 @@
 '''
-steps to exicute this application:
-1. exicute the WifiCam.ion file in ESP32 cam module which is available at examples->WifiCam->WifiCam.ion.
-2. before exicution make shure that the wifi cretentials are saves accordingly.
-3. After uploading the code to the esp32 restart the esp32 cam module.
-4. open the serial monitor and note down the IP address and chane the 18th line of this code with that ip address
-5. Now exicute this python code in local computer and make shure that the computer is also connected to the same netwok
-6. Now you can view the camera output in the windows poped by the python and see the face and ee detection working in real time.
+steps to execute this application:
+1. Execute the WifiCam.ino file in ESP32 cam module which is available at examples->WifiCam->WifiCam.ion.
+2. Before executing the WifiCam example, make sure that the wifi credentials are saves accordingly.
+3. After uploading the code to the esp32, restart the esp32 cam module.
+4. Open the serial monitor and note down the IP address and change the 18th line of this code with that IP address
+5. Now execute this python code on the local computer and make sure that the computer is connected to the same network. 
+   Follow the instructions below while executing the python file.
+   i.  Pass the IP address as the first argument while executing the file.
+   ii. For example, to execute this file use the command "python Face&EyesDetection.py xxx.xxx.xxx.xxx" 
+      where xxx.xxx.xxx.xxx is the IP address of the esp32 cam module.
+6. Now, you can view the camera output in the windows poped by the python and see the face and ee detection working in real-time.
 
 '''
 
 import cv2
 import urllib.request
 import numpy as np
+import sys
  
 f_cas= cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_default.xml')
 eye_cascade=cv2.CascadeClassifier(cv2.data.haarcascades +'haarcascade_eye.xml')
-url='http://xxx.xxx.xxx.xxx/cam-lo.jpg' #change the IP address to the IP address to which the ESP32 cam is connected to
+ 
+url='http://'
+url = url + sys.argv[1]
+url = url + '/cam-lo.jpg'
+
 ##'''cam.bmp / cam-lo.jpg /cam-hi.jpg / cam.mjpeg '''
 cv2.namedWindow("Live Transmission", cv2.WINDOW_AUTOSIZE)
  
