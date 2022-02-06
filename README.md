@@ -8,6 +8,7 @@ This library has been tested with AI Thinker [ESP32-CAM](http://www.ai-thinker.c
 
 * [Doxygen documentation](https://esp32cam.yoursunny.dev/)
 * [#esp32cam on Twitter](https://twitter.com/hashtag/esp32cam)
+* [video tutorial](https://youtu.be/Sb08leLWOgA)
 
 ![esp32cam logo](docs/logo.svg)
 
