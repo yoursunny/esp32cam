@@ -1,8 +1,8 @@
 #include "WifiCam.hpp"
 #include <WiFi.h>
 
-const char* WIFI_SSID = "my-ssid";
-const char* WIFI_PASS = "my-pass";
+static const char* WIFI_SSID = "my-ssid";
+static const char* WIFI_PASS = "my-pass";
 
 esp32cam::Resolution initialResolution;
 
@@ -40,8 +40,10 @@ setup()
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    Serial.println("WiFi failure");
+    delay(5000);
+    ESP.restart();
   }
 
   Serial.println("WiFi connected");

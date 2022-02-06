@@ -31,19 +31,20 @@ jobs:
           git diff --exit-code
       - name: link library
         run: |
-          mkdir -p $HOME/Arduino/libraries/ODROID-GO
+          mkdir -p $HOME/Arduino/libraries
           cd $HOME/Arduino/libraries
           ln -s $GITHUB_WORKSPACE esp32cam
-          # curl -sfL https://github.com/hardkernel/ODROID-GO/archive/${ODROIDGO_VERSION}.tar.gz | tar -C ODROID-GO -xz --strip-components=1
+          mkdir ODROID-GO
+          curl -fsLS https://github.com/hardkernel/ODROID-GO/archive/${ODROIDGO_VERSION}.tar.gz \
+          | tar -C ODROID-GO -xz --strip-components=1 --wildcards '*/library.properties' '*/src/odroid_go.*' '*/src/Fonts' '*/src/utility'
         env:
-          ODROIDGO_VERSION: master
+          ODROIDGO_VERSION: 4a496e337d16bca4ddedbeca3486d7b60662d017
       - name: compile WifiCam example
         run: |
           arduino-cli compile -b esp32:esp32:esp32wrover ./examples/WifiCam
-      # - name: compile GoDisplay example
-      #   run: |
-      #     arduino-cli compile -b esp32:esp32:odroid_esp32 ./examples/GoDisplay
-      #   disabled due to https://github.com/hardkernel/ODROID-GO/issues/24
+      - name: compile GoDisplay example
+        run: |
+          arduino-cli compile -b esp32:esp32:odroid_esp32 ./examples/GoDisplay
       - name: build docs
         run: docs/build.sh
       - name: deploy docs
