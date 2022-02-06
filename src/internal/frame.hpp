@@ -62,10 +62,7 @@ public: // conversion
    */
   bool toJpeg(int quality);
 
-  bool isBmp() const
-  {
-    return m_pixFormat == PIXFORMAT_BMP;
-  }
+  bool isBmp() const;
 
   /** @brief Convert frame to BMP. */
   bool toBmp();
@@ -86,11 +83,6 @@ private:
   size_t m_size = 0;
   int m_width = -1;
   int m_height = -1;
-
-  enum
-  {
-    PIXFORMAT_BMP = -101,
-  };
   int m_pixFormat = -1;
 
   friend class CameraClass;

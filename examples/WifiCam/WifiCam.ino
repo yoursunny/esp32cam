@@ -120,6 +120,13 @@ setup()
     Serial.println(ok ? "CAMERA OK" : "CAMERA FAIL");
   }
 
+  Serial.println();
+  Serial.println("RESOLUTIONS");
+  for (const auto& resolution : esp32cam::Resolution::list()) {
+    Serial.println(resolution);
+  }
+  Serial.println();
+
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);

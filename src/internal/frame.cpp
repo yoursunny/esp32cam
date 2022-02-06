@@ -6,6 +6,8 @@
 
 namespace esp32cam {
 
+static const int PIXFORMAT_BMP = -101;
+
 struct Frame::CameraFbT : public camera_fb_t
 {};
 
@@ -85,6 +87,12 @@ Frame::toJpeg(int quality)
   m_size = size;
   m_pixFormat = PIXFORMAT_JPEG;
   return true;
+}
+
+bool
+Frame::isBmp() const
+{
+  return m_pixFormat == PIXFORMAT_BMP;
 }
 
 bool

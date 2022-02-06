@@ -3,8 +3,7 @@
 
 #include <Arduino.h>
 
-/** \brief write-only Stream backed by fixed-size SPIRAM buffer
- */
+/** @brief write-only Stream backed by fixed-size SPIRAM buffer. */
 class SpiRamOStream : public Stream
 {
 public:
