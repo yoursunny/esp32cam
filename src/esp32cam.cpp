@@ -19,6 +19,22 @@ CameraClass::end()
   return esp_camera_deinit() == ESP_OK;
 }
 
+ResolutionList
+CameraClass::listResolutions() const
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return ResolutionList();
+  }
+
+  camera_sensor_info_t* info = esp_camera_sensor_get_info(&sensor->id);
+  if (info == nullptr) {
+    return ResolutionList();
+  }
+
+  return ResolutionList(info->max_size + 1);
+}
+
 bool
 CameraClass::changeResolution(const Resolution& resolution, int sleepFor)
 {
@@ -72,9 +88,9 @@ CameraClass::streamMjpeg(Client& client, const StreamMjpegConfig& cfg)
     }
 
     client.printf("Content-Type: image/jpeg\r\n"
-                  "Content-Length: %d\r\n"
+                  "Content-Length: %zu\r\n"
                   "\r\n",
-                  static_cast<int>(frame->size()));
+                  frame->size());
     if (!frame->writeTo(client, cfg.frameTimeout)) {
       break;
     }

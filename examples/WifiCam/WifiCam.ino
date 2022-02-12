@@ -22,7 +22,6 @@ setup()
     Config cfg;
     cfg.setPins(pins::AiThinker);
     cfg.setResolution(initialResolution);
-    cfg.setBufferCount(2);
     cfg.setJpeg(80);
 
     bool ok = Camera.begin(cfg);
@@ -34,7 +33,7 @@ setup()
     Serial.println("camera initialize success");
   }
 
-  // stabilize camera before starting WiFi to avoid "Brownout detector was triggered"
+  // stabilize camera before starting WiFi to reduce "Brownout detector was triggered"
   delay(2000);
 
   WiFi.persistent(false);

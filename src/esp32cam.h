@@ -17,21 +17,37 @@ namespace esp32cam {
 class CameraClass
 {
 public:
-  /** @brief Enable camera. */
+  /**
+   * @brief Enable camera.
+   * @return whether success.
+   */
   bool begin(const Config& config);
 
-  /** @brief Disable camera. */
+  /**
+   * @brief Disable camera.
+   * @return whether success.
+   */
   bool end();
 
   /**
+   * @brief Retrieve list of resolutions (likely) supported by hardware.
+   * @pre Camera is enabled.
+   */
+  ResolutionList listResolutions() const;
+
+  /**
    * @brief Change camera resolution.
-   * @pre Initial resolution is higher than specified resolution.
-   * @param resolution new resolution.
+   * @pre Camera is enabled.
+   * @param resolution new resolution; must be no higher than initial resolution.
    * @param sleepFor how long to wait for stabilization (millis).
    */
   bool changeResolution(const Resolution& resolution, int sleepFor = 500);
 
-  /** @brief Capture a frame of picture. */
+  /**
+   * @brief Capture a frame of picture.
+   * @pre Camera is enabled.
+   * @return the picture frame, or nullptr on error.
+   */
   std::unique_ptr<Frame> capture();
 
   struct StreamMjpegConfig

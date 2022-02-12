@@ -1,6 +1,6 @@
 #include "WifiCam.hpp"
 #include <StreamString.h>
-#include <uri/UriRegex.h>
+#include <uri/UriBraces.h>
 
 static const char FRONTPAGE[] = R"EOT(
 <!doctype html>
@@ -89,20 +89,22 @@ addRequestHandlers()
 
   server.on("/resolutions.csv", HTTP_GET, [] {
     StreamString b;
-    for (const auto& r : esp32cam::Resolution::list()) {
-      if (r.getWidth() * r.getHeight() <=
-          initialResolution.getWidth() * initialResolution.getHeight())
-        b.println(r);
+    for (const auto& r : esp32cam::Camera.listResolutions()) {
+      b.println(r);
     }
     server.send(200, "text/csv", b);
   });
 
-  server.on(UriRegex("^\\/([0-9]+)x([0-9]+).(bmp|jpg|mjpeg)$"), HTTP_GET, [] {
+  server.on(UriBraces("/{}x{}.{}"), HTTP_GET, [] {
     long width = server.pathArg(0).toInt();
     long height = server.pathArg(1).toInt();
     String format = server.pathArg(2);
+    if (width == 0 || height == 0 || !(format == "bmp" || format == "jpg" || format == "mjpeg")) {
+      server.send(404);
+      return;
+    }
 
-    auto r = esp32cam::Resolution::find(width, height);
+    auto r = esp32cam::Camera.listResolutions().find(width, height);
     if (!r.isValid()) {
       server.send(404, "text/plain", "non-existent resolution\n");
       return;

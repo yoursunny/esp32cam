@@ -12,10 +12,21 @@ class ResolutionList;
 class Resolution : public Printable
 {
 public:
-  /** @brief Return an iterable collection of possible resolutions. */
+  /**
+   * @brief Return an iterable collection of possible resolutions.
+   *
+   * This list contains all resolutions defined in the esp32-camera library,
+   * but not necessarily supported by the camera hardware.
+   * Use @c Camera.listResolutions() to retrieve supported resolutions.
+   */
   static ResolutionList list();
 
-  /** @brief Find a resolution that satisfies given constraints. */
+  /**
+   * @brief Find a resolution that satisfies given constraints.
+   *
+   * This searches among all resolutions defined in the esp32-camera libary,
+   * which is not necessarily supported by the camera hardware.
+   */
   static Resolution find(int minWidth, int minHeight);
 
   /**
@@ -47,9 +58,7 @@ public:
   }
 
 private:
-  int m_frameSize;
-
-  friend class ResolutionList;
+  int m_frameSize; ///< framesize_t
 
   friend bool operator==(const Resolution& lhs, const Resolution& rhs)
   {
@@ -63,7 +72,7 @@ private:
 };
 
 /**
- * @brief A collection of possible resolutions.
+ * @brief A collection of resolutions.
  * @code
  * for (const auto& resolution : Resolution::list()) {
  *   Serial.println(resolution);
@@ -82,15 +91,13 @@ public:
     using pointer = void;
     using reference = value_type;
 
-    Iterator() = default;
-
-    explicit Iterator(Resolution value)
-      : m_value(value)
+    explicit Iterator(int value = -1)
+      : m_frameSize(value)
     {}
 
     Iterator& operator++()
     {
-      ++m_value.m_frameSize;
+      ++m_frameSize;
       return *this;
     }
 
@@ -103,15 +110,15 @@ public:
 
     reference operator*()
     {
-      return m_value;
+      return Resolution(m_frameSize);
     }
 
   private:
-    Resolution m_value;
+    int m_frameSize; ///< framesize_t
 
     friend bool operator==(const Iterator& lhs, const Iterator& rhs)
     {
-      return lhs.m_value == rhs.m_value;
+      return lhs.m_frameSize == rhs.m_frameSize;
     }
 
     friend bool operator!=(const Iterator& lhs, const Iterator& rhs)
@@ -120,9 +127,21 @@ public:
     }
   };
 
+  /**
+   * @brief Constructor.
+   * @param max exclusive maximum framesize_t.
+   */
+  explicit ResolutionList(int max = 0);
+
   Iterator begin() const;
 
   Iterator end() const;
+
+  /** @brief Find a resolution that satisfies given constraints. */
+  Resolution find(int minWidth, int minHeight) const;
+
+private:
+  int m_max;
 };
 
 } // namespace esp32cam

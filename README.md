@@ -16,6 +16,5 @@ This library has been tested with AI Thinker [ESP32-CAM](http://www.ai-thinker.c
 
 1. Clone this repository under `$HOME/Arduino/libraries` directory.
 2. Add `#include <esp32cam.h>` to your sketch.
-3. In *Tools* - *Board* menu, select **ESP32 Wrover Module** to take advantage of 4MB external PSRAM.
-   Internal RAM is insufficient to support high resolution.
+3. In *Tools* - *Board* menu, select **ESP32 Wrover Module** to enable 4MB external PSRAM.
 4. Check out the [examples](examples/) for how to use.
