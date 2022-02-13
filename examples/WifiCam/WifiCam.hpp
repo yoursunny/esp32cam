@@ -1,8 +1,9 @@
 #ifndef WIFICAM_H
 #define WIFICAM_H
 
-#include <WebServer.h>
 #include <esp32cam.h>
+
+#include <WebServer.h>
 
 extern esp32cam::Resolution initialResolution;
 

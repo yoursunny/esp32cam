@@ -29,21 +29,26 @@ jobs:
         run: |
           mk/format-code.sh
           git diff --exit-code
-      - name: link library
+      - name: install libraries
         run: |
           mkdir -p $HOME/Arduino/libraries
           cd $HOME/Arduino/libraries
           ln -s $GITHUB_WORKSPACE esp32cam
-          mkdir ODROID-GO
+          mkdir -p AsyncTCP ESPAsyncWebServer ODROID-GO
+          curl -fsLS https://github.com/me-no-dev/AsyncTCP/archive/${ASYNCTCP_VERSION}.tar.gz \
+            | tar -C AsyncTCP -xz --strip-components=1
+          curl -fsLS https://github.com/me-no-dev/ESPAsyncWebServer/archive/${ESPASYNCWEBSERVER_VERSION}.tar.gz \
+            | tar -C ESPAsyncWebServer -xz --strip-components=1
           curl -fsLS https://github.com/hardkernel/ODROID-GO/archive/${ODROIDGO_VERSION}.tar.gz \
-          | tar -C ODROID-GO -xz --strip-components=1 --wildcards '*/library.properties' '*/src/odroid_go.*' '*/src/Fonts' '*/src/utility'
+            | tar -C ODROID-GO -xz --strip-components=1 --wildcards '*/library.properties' '*/src/odroid_go.*' '*/src/Fonts' '*/src/utility'
         env:
+          ASYNCTCP_VERSION: ca8ac5f919d02bea07b474531981ddbfd64de97c
+          ESPASYNCWEBSERVER_VERSION: 1d46269cedf477661ca8a29518414f4b74e957d4
           ODROIDGO_VERSION: 4a496e337d16bca4ddedbeca3486d7b60662d017
-      - name: compile WifiCam example
+      - name: compile examples
         run: |
           arduino-cli compile -b esp32:esp32:esp32wrover ./examples/WifiCam
-      - name: compile GoDisplay example
-        run: |
+          arduino-cli compile -b esp32:esp32:esp32wrover ./examples/AsyncCam
           arduino-cli compile -b esp32:esp32:odroid_esp32 ./examples/GoDisplay
       - name: build docs
         run: docs/build.sh
