@@ -8,9 +8,7 @@
 #define ESP32CAM_H
 
 #include "internal/config.hpp"
-#include "internal/frame.hpp"
-
-#include <memory>
+#include "internal/mjpeg.hpp"
 
 namespace esp32cam {
 
@@ -50,27 +48,14 @@ public:
    */
   std::unique_ptr<Frame> capture();
 
-  struct StreamMjpegConfig
-  {
-    /** @brief minimum interval between frame captures. */
-    int minInterval = 0;
-    /** @brief maximum number of frames before disconnecting. */
-    int maxFrames = -1;
-    /** @brief time limit of writing one frame in millis. */
-    int frameTimeout = 10000;
-  };
+  struct [[deprecated("use esp32cam::MjpegConfig")]] StreamMjpegConfig : MjpegConfig{};
 
   /**
    * @brief Stream Motion JPEG.
    * @pre The camera has been initialized to JPEG mode.
    * @return number of frames streamed.
    */
-  int streamMjpeg(Client& client, const StreamMjpegConfig& cfg);
-
-  int streamMjpeg(Client& client)
-  {
-    return streamMjpeg(client, StreamMjpegConfig());
-  }
+  int streamMjpeg(Client& client, const MjpegConfig& cfg = MjpegConfig());
 };
 
 /** @brief ESP32 camera API. */

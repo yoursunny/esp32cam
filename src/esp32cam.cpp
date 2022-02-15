@@ -66,38 +66,42 @@ CameraClass::capture()
 }
 
 int
-CameraClass::streamMjpeg(Client& client, const StreamMjpegConfig& cfg)
+CameraClass::streamMjpeg(Client& client, const MjpegConfig& cfg)
 {
-#define BOUNDARY "e8b8c539-047d-4777-a985-fbba6edff11e"
-  client.print("HTTP/1.1 200 OK\r\n"
-               "Content-Type: multipart/x-mixed-replace;boundary=" BOUNDARY "\r\n"
-               "\r\n");
-  auto lastCapture = millis();
-  int nFrames;
-  for (nFrames = 0; cfg.maxFrames < 0 || nFrames < cfg.maxFrames; ++nFrames) {
-    auto now = millis();
-    auto sinceLastCapture = now - lastCapture;
-    if (static_cast<int>(sinceLastCapture) < cfg.minInterval) {
-      delay(cfg.minInterval - sinceLastCapture);
-    }
-    lastCapture = millis();
+  detail::MjpegHeader hdr;
+  hdr.prepareResponseHeaders();
+  hdr.writeTo(client);
 
-    auto frame = capture();
-    if (frame == nullptr) {
-      break;
+  detail::MjpegController ctrl(cfg);
+  while (true) {
+    auto act = ctrl.decideAction();
+    switch (act) {
+      case detail::MjpegController::CAPTURE: {
+        ctrl.notifyCapture();
+        break;
+      }
+      case detail::MjpegController::RETURN: {
+        ctrl.notifyReturn(capture());
+        break;
+      }
+      case detail::MjpegController::SEND: {
+        hdr.preparePartHeader(ctrl.getFrame()->size());
+        hdr.writeTo(client);
+        ctrl.notifySent(ctrl.getFrame()->writeTo(client, cfg.frameTimeout));
+        hdr.preparePartTrailer();
+        hdr.writeTo(client);
+        break;
+      }
+      case detail::MjpegController::STOP: {
+        client.stop();
+        return ctrl.countSentFrames();
+      }
+      default: {
+        delay(act);
+        break;
+      }
     }
-
-    client.printf("Content-Type: image/jpeg\r\n"
-                  "Content-Length: %zu\r\n"
-                  "\r\n",
-                  frame->size());
-    if (!frame->writeTo(client, cfg.frameTimeout)) {
-      break;
-    }
-    client.print("\r\n--" BOUNDARY "\r\n");
   }
-  return nFrames;
-#undef BOUNDARY
 }
 
 } // namespace esp32cam
