@@ -72,19 +72,20 @@ CameraClass::streamMjpeg(Client& client, const MjpegConfig& cfg)
   hdr.prepareResponseHeaders();
   hdr.writeTo(client);
 
-  detail::MjpegController ctrl(cfg);
+  using Ctrl = detail::MjpegController;
+  Ctrl ctrl(cfg);
   while (true) {
     auto act = ctrl.decideAction();
     switch (act) {
-      case detail::MjpegController::CAPTURE: {
+      case Ctrl::CAPTURE: {
         ctrl.notifyCapture();
         break;
       }
-      case detail::MjpegController::RETURN: {
+      case Ctrl::RETURN: {
         ctrl.notifyReturn(capture());
         break;
       }
-      case detail::MjpegController::SEND: {
+      case Ctrl::SEND: {
         hdr.preparePartHeader(ctrl.getFrame()->size());
         hdr.writeTo(client);
         ctrl.notifySent(ctrl.getFrame()->writeTo(client, cfg.frameTimeout));
@@ -92,7 +93,7 @@ CameraClass::streamMjpeg(Client& client, const MjpegConfig& cfg)
         hdr.writeTo(client);
         break;
       }
-      case detail::MjpegController::STOP: {
+      case Ctrl::STOP: {
         client.stop();
         return ctrl.countSentFrames();
       }

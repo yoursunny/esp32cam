@@ -4,6 +4,7 @@
 #include "esp32cam.h"
 
 #include <ESPAsyncWebServer.h>
+#include <freertos/queue.h>
 #include <freertos/task.h>
 
 namespace esp32cam {
@@ -12,9 +13,12 @@ namespace esp32cam {
  * @sa https://github.com/me-no-dev/ESPAsyncWebServer
  */
 namespace asyncweb {
+namespace detail {
+using namespace esp32cam::detail;
+} // namespace detail
 
-/** @brief HTTP response containing one still image. */
-class StillResponse : public AsyncCallbackResponse
+/** @brief HTTP response of one still image. */
+class StillResponse : public AsyncAbstractResponse
 {
 public:
   /**
@@ -22,12 +26,30 @@ public:
    * @param frame a frame of still image.
    */
   explicit StillResponse(std::unique_ptr<Frame> frame)
-    : AsyncCallbackResponse(determineMineType(*frame), frame->size(),
-                            [this](uint8_t* buffer, size_t maxLen, size_t index) {
-                              return fill(buffer, maxLen, index);
-                            })
-    , m_frame(std::move(frame))
-  {}
+    : m_frame(std::move(frame))
+  {
+    _code = 200;
+    _contentType = determineMineType(*m_frame);
+    _contentLength = m_frame->size();
+    _sendContentLength = true;
+  }
+
+  bool _sourceValid() const override
+  {
+    return true;
+  }
+
+  size_t _fillBuffer(uint8_t* buf, size_t buflen) override
+  {
+    if (m_index >= m_frame->size()) {
+      return 0;
+    }
+
+    size_t len = std::min(buflen, m_frame->size() - m_index);
+    std::copy_n(m_frame->data() + m_index, len, buf);
+    m_index += len;
+    return len;
+  }
 
 private:
   static const char* determineMineType(const Frame& frame)
@@ -41,19 +63,162 @@ private:
     return "application/octet-stream";
   }
 
-  size_t fill(uint8_t* buffer, size_t maxLen, size_t index)
+private:
+  std::unique_ptr<Frame> m_frame;
+  size_t m_index = 0;
+};
+
+/** @brief HTTP response of MJPEG stream. */
+class MjpegResponse : public AsyncAbstractResponse
+{
+public:
+  explicit MjpegResponse(const MjpegConfig& cfg = MjpegConfig())
+    : m_ctrl(cfg)
   {
-    if (index >= m_frame->size()) {
-      return 0;
+    m_queue = xQueueCreate(4, sizeof(Frame*));
+    if (xTaskCreatePinnedToCore(captureTask, "esp32cam-mjpeg", 2048, this, 1, &m_task,
+                                xPortGetCoreID()) != pdPASS) {
+      m_task = nullptr;
+    };
+    if (m_queue == nullptr || m_task == nullptr) {
+      _code = 500;
+      m_ctrl.notifyFail();
+      return;
     }
 
-    size_t len = std::min(maxLen, m_frame->size() - index);
-    std::copy_n(m_frame->data() + index, len, buffer);
+    _code = 200;
+    m_hdr.prepareResponseContentType();
+    _contentType = String(m_hdr.buf, m_hdr.size);
+    _sendContentLength = false;
+  }
+
+  ~MjpegResponse() override
+  {
+    if (m_task != nullptr) {
+      vTaskDelete(m_task);
+      m_task = nullptr;
+    }
+
+    if (m_queue != nullptr) {
+      Frame* frame = nullptr;
+      while (xQueueReceive(m_queue, &frame, 0) == pdTRUE) {
+        delete frame;
+      }
+      vQueueDelete(m_queue);
+      m_queue = nullptr;
+    }
+  }
+
+  bool _sourceValid() const override
+  {
+    return true;
+  }
+
+  size_t _fillBuffer(uint8_t* buf, size_t buflen) override
+  {
+    auto act = m_ctrl.decideAction();
+    switch (act) {
+      case Ctrl::CAPTURE: {
+        xTaskNotify(m_task, 1, eSetValueWithOverwrite);
+        m_ctrl.notifyCapture();
+        return RESPONSE_TRY_AGAIN;
+      }
+      case Ctrl::RETURN: {
+        Frame* frame = nullptr;
+        if (xQueueReceive(m_queue, &frame, 0) == pdTRUE) {
+          m_ctrl.notifyReturn(std::unique_ptr<Frame>(frame));
+        }
+        m_sendNext = SIPartHeader;
+        m_sendRemain = 0;
+        if (m_ctrl.decideAction() != Ctrl::SEND) {
+          return RESPONSE_TRY_AGAIN;
+        }
+        // fallthrough
+      }
+      case Ctrl::SEND: {
+        size_t len = sendPart(buf, buflen);
+        if (len == 0 && m_sendNext == SINone) {
+          m_ctrl.notifySent(true);
+          return RESPONSE_TRY_AGAIN;
+        }
+        return len;
+      }
+      case Ctrl::STOP:
+        return 0;
+      default:
+        return RESPONSE_TRY_AGAIN;
+    }
+  }
+
+private:
+  static void captureTask(void* ctx)
+  {
+    auto self = reinterpret_cast<MjpegResponse*>(ctx);
+    while (true) {
+      uint32_t value = 0;
+      xTaskNotifyWait(0, UINT32_MAX, &value, pdMS_TO_TICKS(10000));
+      if (value == 0) {
+        continue;
+      }
+
+      auto frame = Camera.capture().release();
+      while (xQueueSend(self->m_queue, &frame, pdMS_TO_TICKS(10000)) != pdTRUE) {
+        ;
+      }
+    }
+  }
+
+  size_t sendPart(uint8_t* buf, size_t buflen)
+  {
+    if (m_sendRemain == 0) {
+      switch (m_sendNext) {
+        case SIPartHeader:
+          m_hdr.preparePartHeader(m_ctrl.getFrame()->size());
+          m_sendBuf = reinterpret_cast<const uint8_t*>(m_hdr.buf);
+          m_sendRemain = m_hdr.size;
+          m_sendNext = SIFrame;
+          break;
+        case SIFrame:
+          m_sendBuf = m_ctrl.getFrame()->data();
+          m_sendRemain = m_ctrl.getFrame()->size();
+          m_sendNext = SIPartTrailer;
+          break;
+        case SIPartTrailer:
+          m_hdr.preparePartTrailer();
+          m_sendBuf = reinterpret_cast<const uint8_t*>(m_hdr.buf);
+          m_sendRemain = m_hdr.size;
+          m_sendNext = SINone;
+          break;
+        case SINone:
+          return 0;
+      }
+    }
+
+    size_t len = std::min(m_sendRemain, buflen);
+    std::copy_n(m_sendBuf, len, buf);
+    m_sendBuf += len;
+    m_sendRemain -= len;
     return len;
   }
 
 private:
-  std::unique_ptr<Frame> m_frame;
+  QueueHandle_t m_queue = nullptr;
+  TaskHandle_t m_task = nullptr;
+
+  using Ctrl = detail::MjpegController;
+  Ctrl m_ctrl;
+  detail::MjpegHeader m_hdr;
+
+  enum SendItem
+  {
+    SINone,
+    SIPartHeader,
+    SIFrame,
+    SIPartTrailer,
+  };
+  SendItem m_sendNext = SINone;
+  const uint8_t* m_sendBuf = nullptr;
+  size_t m_sendRemain = 0;
 };
 
 namespace detail {
@@ -88,12 +253,17 @@ inline void
 handleStill(AsyncWebServerRequest* request)
 {
   TaskHandle_t task;
-  auto res =
-    xTaskCreatePinnedToCore(detail::captureStill, "esp32cam", CONFIG_ARDUINO_LOOP_STACK_SIZE,
-                            request, 1, &task, xPortGetCoreID());
+  auto res = xTaskCreatePinnedToCore(detail::captureStill, "esp32cam-still", 2048, request, 1,
+                                     &task, xPortGetCoreID());
   if (res != pdPASS) {
     request->send(500);
   }
+}
+
+inline void
+handleMjpeg(AsyncWebServerRequest* request)
+{
+  request->send(new MjpegResponse());
 }
 
 } // namespace asyncweb

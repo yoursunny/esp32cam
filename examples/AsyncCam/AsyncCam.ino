@@ -47,8 +47,12 @@ setup()
   Serial.print("http://");
   Serial.print(WiFi.localIP());
   Serial.println("/still.jpg");
+  Serial.print("http://");
+  Serial.print(WiFi.localIP());
+  Serial.println("/stream.mjpeg");
 
   server.on("/still.jpg", esp32cam::asyncweb::handleStill);
+  server.on("/stream.mjpeg", esp32cam::asyncweb::handleMjpeg);
 
   server.begin();
 }

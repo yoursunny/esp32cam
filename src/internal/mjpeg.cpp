@@ -33,16 +33,31 @@ MjpegController::notifyCapture()
 void
 MjpegController::notifyReturn(std::unique_ptr<Frame> frame)
 {
+  if (frame == nullptr) {
+    notifyFail();
+    return;
+  }
   m_frame = std::move(frame);
-  m_nextAction = m_frame == nullptr ? STOP : SEND;
+  m_nextAction = SEND;
 }
 
 void
 MjpegController::notifySent(bool ok)
 {
-  m_frame.reset();
   ++m_count;
-  m_nextAction = ok && (m_cfg.maxFrames < 0 || m_count < m_cfg.maxFrames) ? CAPTURE : STOP;
+  if (!ok) {
+    notifyFail();
+    return;
+  }
+  m_frame.reset();
+  m_nextAction = m_cfg.maxFrames < 0 || m_count < m_cfg.maxFrames ? CAPTURE : STOP;
+}
+
+void
+MjpegController::notifyFail()
+{
+  m_frame.reset();
+  m_nextAction = STOP;
 }
 
 #define BOUNDARY "e8b8c539-047d-4777-a985-fbba6edff11e"

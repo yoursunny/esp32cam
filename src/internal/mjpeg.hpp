@@ -5,8 +5,6 @@
 
 #include <memory>
 
-class Print;
-
 namespace esp32cam {
 
 struct MjpegConfig
@@ -80,9 +78,15 @@ public:
    * @brief Notify that a frame is sent to the client.
    * @param ok whether sent successfully.
    * @post getFrame()==nullptr
-   * @post decideAction()==CAPTURE or decideAction()>=0
    */
   void notifySent(bool ok);
+
+  /**
+   * @brief Notify that an error has occurred.
+   * @post getFrame()==nullptr
+   * @post decideAction()==STOP
+   */
+  void notifyFail();
 
 private:
   MjpegConfig m_cfg;
