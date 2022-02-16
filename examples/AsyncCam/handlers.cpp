@@ -46,6 +46,12 @@ $resolution.form.addEventListener("submit", async (evt) => {
 for (const $ctrl of document.querySelectorAll("#controls button")) {
   $ctrl.addEventListener("click", (evt) => {
     evt.preventDefault();
+
+    const $img = $display.querySelector("img");
+    if ($img) {
+      $img.src = "";
+    }
+
     const act = evt.target.getAttribute("data-act");
     if (act === "") {
       $display.innerHTML = "";
@@ -103,7 +109,7 @@ addRequestHandlers()
       return;
     }
 
-    if (!esp32cam::Camera.changeResolution(r)) {
+    if (!esp32cam::Camera.changeResolution(r, 0)) {
       Serial.printf("changeResolution(%ld,%ld) failure\n", width, height);
       request->send(500, "text/plain", "changeResolution error\n");
       return;
