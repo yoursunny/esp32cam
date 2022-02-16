@@ -69,6 +69,16 @@ private:
   {
     return !(lhs == rhs);
   }
+
+  friend bool operator<(const Resolution& lhs, const Resolution& rhs)
+  {
+    return lhs.m_frameSize < rhs.m_frameSize;
+  }
+
+  friend bool operator>(const Resolution& lhs, const Resolution& rhs)
+  {
+    return lhs.m_frameSize > rhs.m_frameSize;
+  }
 };
 
 /**

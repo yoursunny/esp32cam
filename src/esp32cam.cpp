@@ -51,7 +51,9 @@ CameraClass::changeResolution(const Resolution& resolution, int sleepFor)
   if (sensor->set_framesize(sensor, frameSize) != 0) {
     return false;
   }
-  delay(sleepFor);
+  if (sleepFor > 0) {
+    delay(sleepFor);
+  }
   return true;
 }
 

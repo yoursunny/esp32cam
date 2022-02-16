@@ -21,12 +21,16 @@ footer { margin-top: 1rem; }
 </table>
 <footer>Powered by <a href="https://esp32cam.yoursunny.dev/">esp32cam</a></footer>
 <script type="module">
-try {
-  const resolutionsResponse = await fetch("/resolutions.csv");
-  if (!resolutionsResponse.ok) {
-    throw new Error(await resolutionsResponse.text());
+async function fetchText(uri, init) {
+  const response = await fetch(uri, init);
+  if (!response.ok) {
+    throw new Error(await response.text());
   }
-  const list = (await resolutionsResponse.text()).trim().split("\n");
+  return (await response.text()).trim().replaceAll("\r\n", "\n");
+}
+
+try {
+  const list = (await fetchText("/resolutions.csv")).split("\n");
   document.querySelector("#resolutions").innerHTML = list.map((r) => `<tr>${
     ["bmp", "jpg", "mjpeg"].map((fmt) => `<td><a href="/${r}.${fmt}">${r}</a>`).join("")
   }`).join("");

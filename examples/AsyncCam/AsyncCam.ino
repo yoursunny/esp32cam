@@ -1,10 +1,11 @@
-#include <esp32cam-asyncweb.h>
-
-#include <ESPAsyncWebServer.h>
+#include "AsyncCam.hpp"
 #include <WiFi.h>
 
 static const char* WIFI_SSID = "my-ssid";
 static const char* WIFI_PASS = "my-pass";
+
+esp32cam::Resolution initialResolution;
+esp32cam::Resolution currentResolution;
 
 AsyncWebServer server(80);
 
@@ -17,9 +18,12 @@ setup()
   {
     using namespace esp32cam;
 
+    initialResolution = Resolution::find(1024, 768);
+    currentResolution = initialResolution;
+
     Config cfg;
     cfg.setPins(pins::AiThinker);
-    cfg.setResolution(Resolution::find(1024, 768));
+    cfg.setResolution(initialResolution);
     cfg.setJpeg(80);
 
     bool ok = Camera.begin(cfg);
@@ -45,15 +49,9 @@ setup()
 
   Serial.println("WiFi connected");
   Serial.print("http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("/still.jpg");
-  Serial.print("http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("/stream.mjpeg");
+  Serial.println(WiFi.localIP());
 
-  server.on("/still.jpg", esp32cam::asyncweb::handleStill);
-  server.on("/stream.mjpeg", esp32cam::asyncweb::handleMjpeg);
-
+  addRequestHandlers();
   server.begin();
 }
 

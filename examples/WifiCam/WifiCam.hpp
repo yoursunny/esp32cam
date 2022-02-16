@@ -1,5 +1,5 @@
-#ifndef WIFICAM_H
-#define WIFICAM_H
+#ifndef WIFICAM_HPP
+#define WIFICAM_HPP
 
 #include <esp32cam.h>
 
@@ -12,4 +12,4 @@ extern WebServer server;
 void
 addRequestHandlers();
 
-#endif // WIFICAM_H
+#endif // WIFICAM_HPP

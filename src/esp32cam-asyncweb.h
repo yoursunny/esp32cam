@@ -13,9 +13,6 @@ namespace esp32cam {
  * @sa https://github.com/me-no-dev/ESPAsyncWebServer
  */
 namespace asyncweb {
-namespace detail {
-using namespace esp32cam::detail;
-} // namespace detail
 
 /** @brief HTTP response of one still image. */
 class StillResponse : public AsyncAbstractResponse
@@ -51,6 +48,27 @@ public:
     return len;
   }
 
+public:
+  /**
+   * @brief Capture a frame and respond to the request.
+   * @param ctx AsyncWebServerRequest* pointer.
+   *
+   * This function must run as a FreeRTOS task. It self-deletes upon completion.
+   */
+  static void captureTask(void* ctx)
+  {
+    auto request = reinterpret_cast<AsyncWebServerRequest*>(ctx);
+
+    auto frame = Camera.capture();
+    if (frame == nullptr) {
+      request->send(500);
+    } else {
+      request->send(new StillResponse(std::move(frame)));
+    }
+
+    vTaskDelete(nullptr);
+  }
+
 private:
   static const char* determineMineType(const Frame& frame)
   {
@@ -68,7 +86,39 @@ private:
   size_t m_index = 0;
 };
 
-/** @brief HTTP response of MJPEG stream. */
+/**
+ * @brief Handle HTTP request for still image.
+ *
+ * Start a FreeRTOS task to capture one frame of still image under the current camera settings,
+ * and then respond to the HTTP request with the frame.
+ * If this function is called multiple times with concurrent HTTP requests, each response will
+ * contain a different image.
+ * If task creation or image capture fails, respond with HTTP 500 error.
+ *
+ * To perform authentication or other operations before image capture, create another HTTP handler
+ * to do these, and then call this function.
+ */
+inline void
+handleStill(AsyncWebServerRequest* request)
+{
+  TaskHandle_t task;
+  auto res = xTaskCreatePinnedToCore(StillResponse::captureTask, "esp32cam-still", 2048, request, 1,
+                                     &task, xPortGetCoreID());
+  if (res != pdPASS) {
+    request->send(500);
+  }
+}
+
+/**
+ * @brief HTTP response of MJPEG stream.
+ *
+ * Start a FreeRTOS task to capture image frames under the current camera settings,
+ * and respond to the HTTP request as a Motion JPEG stream.
+ * If multiple MjpegResponse instances are active concurrently, each stream will contain
+ * different images.
+ * If task creation fails, respond with HTTP 500 error.
+ * If image capture fails, the stream is stopped.
+ */
 class MjpegResponse : public AsyncAbstractResponse
 {
 public:
@@ -221,45 +271,11 @@ private:
   size_t m_sendRemain = 0;
 };
 
-namespace detail {
-
-inline void
-captureStill(void* ctx)
-{
-  auto request = reinterpret_cast<AsyncWebServerRequest*>(ctx);
-
-  auto frame = Camera.capture();
-  if (frame == nullptr) {
-    request->send(500);
-  } else {
-    request->send(new StillResponse(std::move(frame)));
-  }
-
-  vTaskDelete(xTaskGetCurrentTaskHandle());
-}
-
-} // namespace detail
-
 /**
- * @brief Handle HTTP request for still image capture.
+ * @brief Handle HTTP request for MJPEG stream.
  *
- * Start a FreeRTOS task to capture one frame of still image under the current camera settings,
- * and then respond to the HTTP request with the frame.
- * If this function is called multiple times with concurrent HTTP requests, each response will
- * contain a different image.
- * If task creation or image capture fails, respond with HTTP 500 error.
+ * To specify MjpegConfig, construct MjpegResponse directly.
  */
-inline void
-handleStill(AsyncWebServerRequest* request)
-{
-  TaskHandle_t task;
-  auto res = xTaskCreatePinnedToCore(detail::captureStill, "esp32cam-still", 2048, request, 1,
-                                     &task, xPortGetCoreID());
-  if (res != pdPASS) {
-    request->send(500);
-  }
-}
-
 inline void
 handleMjpeg(AsyncWebServerRequest* request)
 {
