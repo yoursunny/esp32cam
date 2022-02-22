@@ -9,27 +9,34 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: arduino/setup-arduino-cli@v1.1.1
-      - name: install Arduino cores and libraries
+      - id: cores
+        name: refresh Arduino cores
         run: |
+          echo 'https://espressif.github.io/arduino-esp32/package_esp32_index.json' >~/arduino-cores.txt
           arduino-cli version
-          arduino-cli core update-index --additional-urls $ARDUINO_CORE_URI
-          arduino-cli core install esp32:esp32 --additional-urls $ARDUINO_CORE_URI
-        env:
-          ARDUINO_CORE_URI: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          arduino-cli update --additional-urls "$(<~/arduino-cores.txt)"
+          echo ::set-output name=d::$(sha256sum ~/.arduino15/package_*index.json | sha256sum | cut -d' ' -f1)
+      - name: cache Arduino cores
+        uses: actions/cache@v2
+        with:
+          path: ~/.arduino15/staging/packages
+          key: cores-${{ steps.cores.outputs.d }}
+      - name: install Arduino cores
+        run: |
+          arduino-cli core install esp32:esp32 --additional-urls "$(<~/arduino-cores.txt)"
       - uses: actions/setup-python@v2
         with:
           python-version: '3.9'
       - name: install dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install esptool
-          sudo apt-get install -y clang-format-11 doxygen
+          sudo apt-get install -y --no-install-recommends clang-format-11 doxygen
       - uses: actions/checkout@v2
       - name: check code style
         run: |
           mk/format-code.sh
           git diff --exit-code
-      - name: install libraries
+      - name: prepare Arduino libraries
         run: |
           mkdir -p $HOME/Arduino/libraries
           cd $HOME/Arduino/libraries
