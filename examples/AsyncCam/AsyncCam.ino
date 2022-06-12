@@ -14,6 +14,17 @@ setup()
 {
   Serial.begin(115200);
   Serial.println();
+  delay(2000);
+
+  WiFi.persistent(false);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    Serial.println("WiFi failure");
+    delay(5000);
+    ESP.restart();
+  }
+  Serial.println("WiFi connected");
 
   {
     using namespace esp32cam;
@@ -35,19 +46,7 @@ setup()
     Serial.println("camera initialize success");
   }
 
-  // stabilize camera before starting WiFi to reduce "Brownout detector was triggered"
-  delay(2000);
-
-  WiFi.persistent(false);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("WiFi failure");
-    delay(5000);
-    ESP.restart();
-  }
-
-  Serial.println("WiFi connected");
+  Serial.println("camera starting");
   Serial.print("http://");
   Serial.println(WiFi.localIP());
 
