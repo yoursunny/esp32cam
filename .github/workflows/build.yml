@@ -15,7 +15,7 @@ jobs:
           echo 'https://espressif.github.io/arduino-esp32/package_esp32_index.json' >~/arduino-cores.txt
           arduino-cli version
           arduino-cli update --additional-urls "$(<~/arduino-cores.txt)"
-          echo ::set-output name=d::$(sha256sum ~/.arduino15/package_*index.json | sha256sum | cut -d' ' -f1)
+          echo d=$(sha256sum ~/.arduino15/package_*index.json | sha256sum | cut -d' ' -f1) >> $GITHUB_OUTPUT
       - name: Cache Arduino cores
         uses: actions/cache@v3
         with:
