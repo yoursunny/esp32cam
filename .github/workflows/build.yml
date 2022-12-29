@@ -3,7 +3,8 @@ on:
   push:
   pull_request:
   workflow_dispatch:
-
+permissions:
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -56,10 +57,16 @@ jobs:
       - name: Build docs
         run: docs/build.sh
       - name: Deploy docs
-        uses: South-Paw/action-netlify-deploy@v1.2.1
+        uses: nwtgck/actions-netlify@v2
         with:
+          publish-dir: ./docs/html/
+          production-deploy: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          netlify-site-id: 7de100ca-e942-419d-af2c-18e6c528b96e
-          build-dir: ./docs/html/
+          deploy-message: ${{ github.sha }} ${{ github.run_id }}
+          enable-pull-request-comment: false
+          enable-commit-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: 7de100ca-e942-419d-af2c-18e6c528b96e
         if: ${{ github.repository == 'yoursunny/esp32cam' && github.event_name == 'push' }}
+    timeout-minutes: 30
