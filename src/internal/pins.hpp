@@ -46,6 +46,28 @@ constexpr Pins AiThinker{
   PWDN: 32,
 };
 
+/** @brief Pin definition for FREENOVE WROVER ESP32-CAM. */
+constexpr Pins FreeNove{
+  D0: 4,
+  D1: 5,
+  D2: 18,
+  D3: 19,
+  D4: 36,
+  D5: 39,
+  D6: 34,
+  D7: 35,
+  XCLK: 21,
+  PCLK: 22,
+  VSYNC: 25,
+  HREF: 23,
+  SDA: 26,
+  SCL: 27,
+  RESET: -1,
+  PWDN: -1,
+
+};  
+  
+  
 /** @brief Pin definition for M5Stack M5Camera. */
 constexpr Pins M5Camera{
   D0: 32,
