@@ -64,10 +64,9 @@ constexpr Pins FreeNove{
   SCL: 27,
   RESET: -1,
   PWDN: -1,
+};
 
-};  
-  
-  
+
 /** @brief Pin definition for M5Stack M5Camera. */
 constexpr Pins M5Camera{
   D0: 32,
