@@ -1,4 +1,4 @@
-#include "esp32cam.h"
+﻿#include "esp32cam.h"
 
 #include <Arduino.h>
 #include <esp_camera.h>
@@ -410,6 +410,133 @@ CameraClass::changDcw(int iEnable)
   }
 
   if (sensor->set_dcw(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+bool
+CameraClass::changeZoom(int iEnable)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+  // sensor->status.aec2 = enable;
+  if (sensor->set_reg(sensor, 0x12 /*COM7*/, 0xFF, iEnable?0x04/*COM7_ZOOM_EN*/:0) == 0) {
+//  if (sensor->set_reg(sensor, 0x01 /*BANK_SENSOR*/, 0x12 /*COM7*/, iEnable?0x04/*COM7_ZOOM_EN*/:0) == 0) {
+//  if (sensor->set_zoom(sensor, iEnable) == 0) {
+    return true;
+  } else
+    return false;
+}
+
+int
+CameraClass::getBandMode() 
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+  return sensor->get_reg(sensor, 0x3C0C, 0x01);
+}
+  
+bool
+CameraClass::changeBandMode(int ilevel) 
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+	return false;
+  }
+  // OV3660 registers
+  if ( ilevel == 0 ) {
+	// Auto Mode: Enable 0x3004[2]
+	if (sensor->set_reg(sensor, 0x3a00, 0x32, 0x32) == 0 && 
+		sensor->set_reg(sensor, 0x3004, 0x04, 0x04) == 0 && 
+		sensor->set_reg(sensor, 0x3c00, 0x04, 0x00) == 0 /* 60Hz? */ )
+		return true;
+	else
+		return false;
+  } else {
+	// Manual Mode: Disable registers
+  	if (sensor->set_reg(sensor, 0x3a00, 0x32, 0x00) == 0 && 
+		sensor->set_reg(sensor, 0x3004, 0x04, 0x00) == 0 ) {
+		if ( ilevel == 1 ) {
+// TESTING sensor->set_reg(sensor, 0x5000, 0x20, 0x20);
+			// 50 HZ
+			if (sensor->set_reg(sensor, 0x3c00, 0x04, 0x04) == 0) {
+				sensor->set_reg(sensor, 0x3a08, 0x00, 0x00);//50HZ BAND WIDTH
+				sensor->set_reg(sensor, 0x3a09, 0xeb, 0xeb);//50HZ BAND WIDTH
+				sensor->set_reg(sensor, 0x3a0e, 0x06, 0x06);//50HZ MAX BAND
+
+				sensor->set_reg(sensor, 0x3C0C, 0x01, 0x01);
+				return true;
+				} else
+				return false;
+		} else {
+// TESTING sensor->set_reg(sensor, 0x5000, 0x20, 0x00);
+			// 60 HZ
+			if (sensor->set_reg(sensor, 0x3c00, 0x04, 0x00) == 0) {
+				sensor->set_reg(sensor, 0x3a0a, 0x00, 0x00);//60HZ BAND WIDTH
+				sensor->set_reg(sensor, 0x3a0b, 0xc4, 0xc4);//60HZ BAND WIDTH
+				sensor->set_reg(sensor, 0x3a0d, 0x08, 0x08);//60HZ MAX BAND
+				
+				sensor->set_reg(sensor, 0x3C0C, 0x01, 0x00);
+				return true;
+			} else
+				return false;
+		}		
+	} else {
+		return false;
+	}
+  }
+
+  /* OV3660
+	{0x3a00, 0x38}, //BIT[5]:1,banding function enable;bit[2] night mode disable
+	// /******if use 50HZ banding remove, refer to below setting********
+	{0x3c00, 0x04}, //BIT[2]:1,ENABLE 50HZ
+	{0x3a14, 0x06}, //NIGHT MODE CEILING, 50HZ
+	{0x3a15, 0x6d}, //NIGHT MODE CEILING, 50HZ
+	{0x3a08, 0x00}, //50HZ BAND WIDTH
+	{0x3a09, 0xeb}, //50HZ BAND WIDTH
+	{0x3a0e, 0x06}, //50HZ MAX BAND
+	
+	{0x380e, 0x06}, 
+	{0x380f, 0x6d}, //inset 81 dummy lines for banding filter//1c
+	// /******if use 60HZ banding remove, refer to below setting********
+	
+	//{0x3c00, 0x00}, //BIT[2]:0,ENABLE 50HZ
+	{0x3a02, 0x06}, //NIGHT MODE CEILING, 60HZ
+	{0x3a03, 0x6d}, //NIGHT MODE CEILING, 60HZ
+	{0x3a0a, 0x00}, //60HZ BAND WIDTH
+	{0x3a0b, 0xc4}, //60HZ BAND WIDTH
+	{0x3a0d, 0x08}, //60HZ MAX BAND
+	
+	0x3004[2] = 1 = AUTO
+	0x3004[2] = 0 = MANUAL
+	0X3C0C[0] = 0 = 60hz
+	0X3C0C[0] = 1 = 50hz
+   */
+}
+
+bool
+CameraClass::changePll(int iMul, int iPre, int iPclk)
+{
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+	
+  if (sensor->set_pll(	sensor, 
+						false, 
+						iMul, 
+						1, 
+						iPre, 
+						false, 
+						0, 
+						true, 
+						iPclk) == 0) {
     return true;
   } else
     return false;

@@ -92,7 +92,7 @@ Frame::setData(uint8_t* newdata, size_t newsize, bool bIsBmp) {
   releaseFb();
   m_data = newdata;
   m_size = newsize;
-  m_pixFormat = (bIsBmp ? PIXFORMAT_BMP : PIXFORMAT_JPEG);
+  m_pixFormat = (int)(bIsBmp ? PIXFORMAT_BMP : PIXFORMAT_JPEG);
 }
 
 bool

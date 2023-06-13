@@ -203,7 +203,44 @@ public:
   */
   bool
   changDcw(int iEnable);
-  
+
+  /** \brief Enable/Disable COM7_ZOOM_EN
+   *  \param iEnable must be 0(disable) or 1 (enable)
+   */
+  bool
+  changeZoom(int iEnable);
+
+  /** \brief Get detectedBandMode Light Frequence Detection (Antiflicker)
+   *	return  
+   *  \	0 = 60hz
+   *  \ 1 = 50hz
+   */
+  int
+  getBandMode(void);
+
+  /** \brief Change BandMode Light Frequewnce Detection (Antiflicker)
+   *  \param ilevel must be > 0 && <= NUM_SPECIAL_EFFECTS, default 0
+   *  \	0 = AUTO
+   *  \ 1 = MANUAL 50hz
+   *  \ 2 = MANUAL 60hz
+   */
+  bool
+  changeBandMode(int ilevel);
+
+  /** \brief TODO
+   *  \param iMul 
+   *  \param iPclk
+   *  \param iPre
+   *  \ is set to 50hz or 60hz. 
+   */
+  bool
+  changePll(int iMul, int iPre, int iPclk);
+
+  /** \brief Set Double Clock Mode for ov2640
+   */
+  bool
+  setDoubleClk();
+
   /** \brief Capture a frame of picture.
    */
   std::unique_ptr<Frame>

@@ -12,7 +12,7 @@ class Print;
 # include <ESPAsyncTCP.h>
 #endif
 #if defined(ESP32)
-# include <FreeRTOS.h>
+# include "freertos/FreeRTOS.h"
 # include <AsyncTCP.h>
 #endif
 
