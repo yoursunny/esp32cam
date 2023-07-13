@@ -65,6 +65,7 @@ jobs:
           deploy-message: ${{ github.sha }} ${{ github.run_id }}
           enable-pull-request-comment: false
           enable-commit-comment: false
+          enable-github-deployment: false
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: 7de100ca-e942-419d-af2c-18e6c528b96e
