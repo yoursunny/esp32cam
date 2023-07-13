@@ -3,8 +3,7 @@ on:
   push:
   pull_request:
   workflow_dispatch:
-permissions:
-  contents: read
+permissions: {}
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -57,7 +56,7 @@ jobs:
       - name: Build docs
         run: docs/build.sh
       - name: Deploy docs
-        uses: nwtgck/actions-netlify@v2
+        uses: nwtgck/actions-netlify@30aa80fe8d5eec30813fc8b17b77e0a6663f09b5
         with:
           publish-dir: ./docs/html/
           production-deploy: true
@@ -65,6 +64,7 @@ jobs:
           deploy-message: ${{ github.sha }} ${{ github.run_id }}
           enable-pull-request-comment: false
           enable-commit-comment: false
+          enable-commit-status: false
           enable-github-deployment: false
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
