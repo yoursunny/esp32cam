@@ -6,24 +6,20 @@
 namespace esp32cam {
 
 ResolutionList::ResolutionList(int max)
-  : m_max(max)
-{}
+  : m_max(max) {}
 
 ResolutionList::Iterator
-ResolutionList::begin() const
-{
+ResolutionList::begin() const {
   return Iterator(0);
 }
 
 ResolutionList::Iterator
-ResolutionList::end() const
-{
+ResolutionList::end() const {
   return Iterator(m_max);
 }
 
 Resolution
-ResolutionList::find(int minWidth, int minHeight) const
-{
+ResolutionList::find(int minWidth, int minHeight) const {
   for (auto r : *this) {
     if (r.getWidth() >= minWidth && r.getHeight() >= minHeight) {
       return r;
@@ -33,31 +29,26 @@ ResolutionList::find(int minWidth, int minHeight) const
 }
 
 ResolutionList
-Resolution::list()
-{
+Resolution::list() {
   static ResolutionList list(FRAMESIZE_INVALID);
   return list;
 }
 
 Resolution
-Resolution::find(int minWidth, int minHeight)
-{
+Resolution::find(int minWidth, int minHeight) {
   return list().find(minWidth, minHeight);
 }
 
 Resolution::Resolution(int frameSize)
-  : m_frameSize(frameSize)
-{}
+  : m_frameSize(frameSize) {}
 
 bool
-Resolution::isValid() const
-{
+Resolution::isValid() const {
   return m_frameSize >= 0 && m_frameSize < FRAMESIZE_INVALID;
 }
 
 int
-Resolution::getWidth() const
-{
+Resolution::getWidth() const {
   if (!isValid()) {
     return -1;
   }
@@ -65,8 +56,7 @@ Resolution::getWidth() const
 }
 
 int
-Resolution::getHeight() const
-{
+Resolution::getHeight() const {
   if (!isValid()) {
     return -1;
   }
@@ -74,8 +64,7 @@ Resolution::getHeight() const
 }
 
 size_t
-Resolution::printTo(Print& p) const
-{
+Resolution::printTo(Print& p) const {
   size_t len = 0;
   len += p.print(getWidth());
   len += p.print('x');

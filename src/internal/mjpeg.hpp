@@ -7,8 +7,7 @@
 
 namespace esp32cam {
 
-struct MjpegConfig
-{
+struct MjpegConfig {
   /** @brief minimum interval between frame captures. */
   int minInterval = 0;
   /** @brief maximum number of frames before disconnecting. */
@@ -20,25 +19,21 @@ struct MjpegConfig
 namespace detail {
 
 /** @brief Control MJPEG stream timing. */
-class MjpegController
-{
+class MjpegController {
 public:
   explicit MjpegController(MjpegConfig cfg);
 
   /** @brief Retrieve config object. */
-  const MjpegConfig& getConfig() const
-  {
+  const MjpegConfig& getConfig() const {
     return m_cfg;
   }
 
   /** @brief Retrieve number of sent frames. */
-  int countSentFrames() const
-  {
+  int countSentFrames() const {
     return m_count;
   }
 
-  enum
-  {
+  enum {
     CAPTURE = -1,
     RETURN = -2,
     SEND = -3,
@@ -69,8 +64,7 @@ public:
   void notifyReturn(std::unique_ptr<Frame> frame);
 
   /** @brief Retrieve current frame. */
-  Frame* getFrame() const
-  {
+  Frame* getFrame() const {
     return m_frame.get();
   }
 
@@ -97,8 +91,7 @@ private:
 };
 
 /** @brief Prepare HTTP headers related to MJPEG streaming. */
-class MjpegHeader
-{
+class MjpegHeader {
 public:
   void prepareResponseHeaders();
 

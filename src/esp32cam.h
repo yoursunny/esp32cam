@@ -12,8 +12,7 @@
 
 namespace esp32cam {
 
-class CameraClass
-{
+class CameraClass {
 public:
   /**
    * @brief Enable camera.
@@ -63,8 +62,7 @@ extern CameraClass Camera;
 
 /** @brief Capture a frame with the camera. */
 inline std::unique_ptr<Frame>
-capture()
-{
+capture() {
   return Camera.capture();
 }
 

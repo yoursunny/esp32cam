@@ -11,8 +11,7 @@ static const uint16_t CAM_PORT = 80;
 static const char* CAM_URI = "/320x240.jpg";
 
 void
-setup()
-{
+setup() {
   GO.begin(115200);
 
   WiFi.persistent(false);
@@ -26,8 +25,7 @@ setup()
 }
 
 void
-loop()
-{
+loop() {
   WiFiClient tcp;
   HTTPClient http;
   http.begin(tcp, CAM_SERVER, CAM_PORT, CAM_URI);

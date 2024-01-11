@@ -8,8 +8,7 @@ namespace esp32cam {
 
 static const int PIXFORMAT_BMP = -101;
 
-struct Frame::CameraFbT : public camera_fb_t
-{};
+struct Frame::CameraFbT : public camera_fb_t {};
 
 Frame::Frame() = default;
 
@@ -19,11 +18,9 @@ Frame::Frame(void* fb)
   , m_size(m_fb->len)
   , m_width(m_fb->width)
   , m_height(m_fb->height)
-  , m_pixFormat(m_fb->format)
-{}
+  , m_pixFormat(m_fb->format) {}
 
-Frame::~Frame()
-{
+Frame::~Frame() {
   releaseFb();
   if (m_data != nullptr) {
     free(m_data);
@@ -31,8 +28,7 @@ Frame::~Frame()
 }
 
 void
-Frame::releaseFb()
-{
+Frame::releaseFb() {
   if (m_fb != nullptr) {
     esp_camera_fb_return(m_fb);
     m_fb = nullptr;
@@ -41,20 +37,17 @@ Frame::releaseFb()
 }
 
 bool
-Frame::writeTo(Print& os, int timeout)
-{
+Frame::writeTo(Print& os, int timeout) {
   return writeToImpl(os, timeout, nullptr);
 }
 
 bool
-Frame::writeTo(Client& os, int timeout)
-{
+Frame::writeTo(Client& os, int timeout) {
   return writeToImpl(os, timeout, &os);
 }
 
 bool
-Frame::writeToImpl(Print& os, int timeout, Client* client)
-{
+Frame::writeToImpl(Print& os, int timeout, Client* client) {
   auto startTime = millis();
   for (size_t i = 0; i < m_size; i += os.write(&m_data[i], m_size - i)) {
     if (millis() - startTime > static_cast<unsigned long>(timeout) ||
@@ -67,14 +60,12 @@ Frame::writeToImpl(Print& os, int timeout, Client* client)
 }
 
 bool
-Frame::isJpeg() const
-{
+Frame::isJpeg() const {
   return m_pixFormat == PIXFORMAT_JPEG;
 }
 
 bool
-Frame::toJpeg(int quality)
-{
+Frame::toJpeg(int quality) {
   uint8_t* data;
   size_t size;
   bool ok = fmt2jpg(m_data, m_size, m_width, m_height, static_cast<pixformat_t>(m_pixFormat),
@@ -90,14 +81,12 @@ Frame::toJpeg(int quality)
 }
 
 bool
-Frame::isBmp() const
-{
+Frame::isBmp() const {
   return m_pixFormat == PIXFORMAT_BMP;
 }
 
 bool
-Frame::toBmp()
-{
+Frame::toBmp() {
   uint8_t* data;
   size_t size;
   bool ok =

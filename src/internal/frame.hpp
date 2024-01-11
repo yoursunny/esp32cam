@@ -10,28 +10,23 @@ class Print;
 namespace esp32cam {
 
 /** @brief A frame of picture. */
-class Frame
-{
+class Frame {
 public: // access
   ~Frame();
 
-  uint8_t* data() const
-  {
+  uint8_t* data() const {
     return m_data;
   }
 
-  size_t size() const
-  {
+  size_t size() const {
     return m_size;
   }
 
-  int getWidth() const
-  {
+  int getWidth() const {
     return m_width;
   }
 
-  int getHeight() const
-  {
+  int getHeight() const {
     return m_height;
   }
 

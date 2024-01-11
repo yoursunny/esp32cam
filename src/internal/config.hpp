@@ -14,8 +14,7 @@ convertJpegQuality(int quality);
 } // namespace detail
 
 /** @brief Camera configuration. */
-class Config
-{
+class Config {
 public:
   Config();
 

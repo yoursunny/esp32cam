@@ -9,8 +9,7 @@ namespace esp32cam {
 class ResolutionList;
 
 /** @brief Picture width and height. */
-class Resolution : public Printable
-{
+class Resolution : public Printable {
 public:
   /**
    * @brief Return an iterable collection of possible resolutions.
@@ -52,31 +51,26 @@ public:
    * @tparam T framesize_t
    */
   template<typename T>
-  T as() const
-  {
+  T as() const {
     return static_cast<T>(m_frameSize);
   }
 
 private:
   int m_frameSize; ///< framesize_t
 
-  friend bool operator==(const Resolution& lhs, const Resolution& rhs)
-  {
+  friend bool operator==(const Resolution& lhs, const Resolution& rhs) {
     return (!lhs.isValid() && !rhs.isValid()) || (lhs.m_frameSize == rhs.m_frameSize);
   }
 
-  friend bool operator!=(const Resolution& lhs, const Resolution& rhs)
-  {
+  friend bool operator!=(const Resolution& lhs, const Resolution& rhs) {
     return !(lhs == rhs);
   }
 
-  friend bool operator<(const Resolution& lhs, const Resolution& rhs)
-  {
+  friend bool operator<(const Resolution& lhs, const Resolution& rhs) {
     return lhs.m_frameSize < rhs.m_frameSize;
   }
 
-  friend bool operator>(const Resolution& lhs, const Resolution& rhs)
-  {
+  friend bool operator>(const Resolution& lhs, const Resolution& rhs) {
     return lhs.m_frameSize > rhs.m_frameSize;
   }
 };
@@ -89,11 +83,9 @@ private:
  * }
  * @endcode
  */
-class ResolutionList
-{
+class ResolutionList {
 public:
-  class Iterator
-  {
+  class Iterator {
   public:
     using iterator_catagory = std::forward_iterator_tag;
     using value_type = const Resolution;
@@ -102,37 +94,31 @@ public:
     using reference = value_type;
 
     explicit Iterator(int value = -1)
-      : m_frameSize(value)
-    {}
+      : m_frameSize(value) {}
 
-    Iterator& operator++()
-    {
+    Iterator& operator++() {
       ++m_frameSize;
       return *this;
     }
 
-    Iterator operator++(int)
-    {
+    Iterator operator++(int) {
       Iterator copy(*this);
       ++*this;
       return copy;
     }
 
-    reference operator*()
-    {
+    reference operator*() {
       return Resolution(m_frameSize);
     }
 
   private:
     int m_frameSize; ///< framesize_t
 
-    friend bool operator==(const Iterator& lhs, const Iterator& rhs)
-    {
+    friend bool operator==(const Iterator& lhs, const Iterator& rhs) {
       return lhs.m_frameSize == rhs.m_frameSize;
     }
 
-    friend bool operator!=(const Iterator& lhs, const Iterator& rhs)
-    {
+    friend bool operator!=(const Iterator& lhs, const Iterator& rhs) {
       return !(lhs == rhs);
     }
   };

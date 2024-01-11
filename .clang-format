@@ -3,10 +3,14 @@ BasedOnStyle: Mozilla
 AllowShortFunctionsOnASingleLine: Empty
 BinPackArguments: true
 BinPackParameters: true
+BreakBeforeBraces: Attach
 ColumnLimit: 100
 Cpp11BracedListStyle: true
 FixNamespaceComments: true
+IncludeIsMainRegex: '(\.t)?$'
+InsertBraces: true
+QualifierAlignment: Custom
+QualifierOrder: ['static', 'inline', 'const', 'constexpr', 'volatile', 'type', 'restrict']
 ReflowComments: false
-SortIncludes: true
-SortUsingDeclarations: true
+ShortNamespaceLines: 1000000
 SpacesInContainerLiterals: false

@@ -6,7 +6,7 @@ on:
 permissions: {}
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: arduino/setup-arduino-cli@v1
       - id: cores
@@ -26,8 +26,8 @@ jobs:
           arduino-cli core install esp32:esp32 --additional-urls "$(<~/arduino-cores.txt)"
       - name: Install dependencies
         run: |
-          sudo apt-get install -y --no-install-recommends clang-format-11 doxygen
-      - uses: actions/checkout@v3
+          sudo apt-get install -y --no-install-recommends clang-format-15 doxygen
+      - uses: actions/checkout@v4
       - name: Check code style
         run: |
           mk/format-code.sh
@@ -50,13 +50,13 @@ jobs:
           ODROIDGO_VERSION: 4a496e337d16bca4ddedbeca3486d7b60662d017
       - name: Compile examples
         run: |
-          arduino-cli compile -b esp32:esp32:esp32wrover ./examples/WifiCam
-          arduino-cli compile -b esp32:esp32:esp32wrover ./examples/AsyncCam
+          arduino-cli compile -b esp32:esp32:esp32cam ./examples/WifiCam
+          arduino-cli compile -b esp32:esp32:esp32cam ./examples/AsyncCam
           arduino-cli compile -b esp32:esp32:odroid_esp32 ./examples/GoDisplay
       - name: Build docs
         run: docs/build.sh
       - name: Deploy docs
-        uses: nwtgck/actions-netlify@30aa80fe8d5eec30813fc8b17b77e0a6663f09b5
+        uses: nwtgck/actions-netlify@v2.1.0
         with:
           publish-dir: ./docs/html/
           production-deploy: true

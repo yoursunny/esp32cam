@@ -8,20 +8,17 @@ namespace esp32cam {
 CameraClass Camera;
 
 bool
-CameraClass::begin(const Config& config)
-{
+CameraClass::begin(const Config& config) {
   return esp_camera_init(reinterpret_cast<const camera_config_t*>(config.m_cfg)) == ESP_OK;
 }
 
 bool
-CameraClass::end()
-{
+CameraClass::end() {
   return esp_camera_deinit() == ESP_OK;
 }
 
 ResolutionList
-CameraClass::listResolutions() const
-{
+CameraClass::listResolutions() const {
   sensor_t* sensor = esp_camera_sensor_get();
   if (sensor == nullptr) {
     return ResolutionList();
@@ -36,8 +33,7 @@ CameraClass::listResolutions() const
 }
 
 bool
-CameraClass::changeResolution(const Resolution& resolution, int sleepFor)
-{
+CameraClass::changeResolution(const Resolution& resolution, int sleepFor) {
   sensor_t* sensor = esp_camera_sensor_get();
   if (sensor == nullptr) {
     return false;
@@ -58,8 +54,7 @@ CameraClass::changeResolution(const Resolution& resolution, int sleepFor)
 }
 
 std::unique_ptr<Frame>
-CameraClass::capture()
-{
+CameraClass::capture() {
   camera_fb_t* fb = esp_camera_fb_get();
   if (fb == nullptr) {
     return nullptr;
@@ -68,8 +63,7 @@ CameraClass::capture()
 }
 
 int
-CameraClass::streamMjpeg(Client& client, const MjpegConfig& cfg)
-{
+CameraClass::streamMjpeg(Client& client, const MjpegConfig& cfg) {
   detail::MjpegHeader hdr;
   hdr.prepareResponseHeaders();
   hdr.writeTo(client);

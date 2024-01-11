@@ -10,8 +10,7 @@ esp32cam::Resolution currentResolution;
 AsyncWebServer server(80);
 
 void
-setup()
-{
+setup() {
   Serial.begin(115200);
   Serial.println();
   delay(2000);
@@ -55,8 +54,7 @@ setup()
 }
 
 void
-loop()
-{
+loop() {
   // esp32cam-asyncweb.h depends on FreeRTOS task API including vTaskDelete, so you must have a
   // non-zero delay in the loop() function; otherwise, FreeRTOS kernel memory cannot be freed
   // properly and the system would run out of memory.

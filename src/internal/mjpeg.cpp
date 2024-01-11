@@ -7,12 +7,10 @@ namespace detail {
 
 MjpegController::MjpegController(MjpegConfig cfg)
   : m_cfg(cfg)
-  , m_nextCaptureTime(millis())
-{}
+  , m_nextCaptureTime(millis()) {}
 
 int
-MjpegController::decideAction()
-{
+MjpegController::decideAction() {
   if (m_nextAction == CAPTURE) {
     auto t = static_cast<int>(m_nextCaptureTime - millis());
     if (t > 0) {
@@ -24,15 +22,13 @@ MjpegController::decideAction()
 }
 
 void
-MjpegController::notifyCapture()
-{
+MjpegController::notifyCapture() {
   m_nextAction = RETURN;
   m_nextCaptureTime = millis() + static_cast<unsigned long>(m_cfg.minInterval);
 }
 
 void
-MjpegController::notifyReturn(std::unique_ptr<Frame> frame)
-{
+MjpegController::notifyReturn(std::unique_ptr<Frame> frame) {
   if (frame == nullptr) {
     notifyFail();
     return;
@@ -42,8 +38,7 @@ MjpegController::notifyReturn(std::unique_ptr<Frame> frame)
 }
 
 void
-MjpegController::notifySent(bool ok)
-{
+MjpegController::notifySent(bool ok) {
   ++m_count;
   if (!ok) {
     notifyFail();
@@ -54,8 +49,7 @@ MjpegController::notifySent(bool ok)
 }
 
 void
-MjpegController::notifyFail()
-{
+MjpegController::notifyFail() {
   m_frame.reset();
   m_nextAction = STOP;
 }
@@ -63,8 +57,7 @@ MjpegController::notifyFail()
 #define BOUNDARY "e8b8c539-047d-4777-a985-fbba6edff11e"
 
 void
-MjpegHeader::prepareResponseHeaders()
-{
+MjpegHeader::prepareResponseHeaders() {
   size = snprintf(buf, sizeof(buf),
                   "HTTP/1.1 200 OK\r\n"
                   "Content-Type: multipart/x-mixed-replace;boundary=" BOUNDARY "\r\n"
@@ -72,14 +65,12 @@ MjpegHeader::prepareResponseHeaders()
 }
 
 void
-MjpegHeader::prepareResponseContentType()
-{
+MjpegHeader::prepareResponseContentType() {
   size = snprintf(buf, sizeof(buf), "multipart/x-mixed-replace;boundary=" BOUNDARY);
 }
 
 void
-MjpegHeader::preparePartHeader(size_t contentLength)
-{
+MjpegHeader::preparePartHeader(size_t contentLength) {
   size = snprintf(buf, sizeof(buf),
                   "Content-Type: image/jpeg\r\n"
                   "Content-Length: %zu\r\n"
@@ -88,14 +79,12 @@ MjpegHeader::preparePartHeader(size_t contentLength)
 }
 
 void
-MjpegHeader::preparePartTrailer()
-{
+MjpegHeader::preparePartTrailer() {
   size = snprintf(buf, sizeof(buf), "\r\n--" BOUNDARY "\r\n");
 }
 
 size_t
-MjpegHeader::writeTo(Print& os)
-{
+MjpegHeader::writeTo(Print& os) {
   return os.write(buf, size);
 }
 

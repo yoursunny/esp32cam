@@ -41,8 +41,7 @@ try {
 )EOT";
 
 static void
-serveStill(bool wantBmp)
-{
+serveStill(bool wantBmp) {
   auto frame = esp32cam::capture();
   if (frame == nullptr) {
     Serial.println("capture() failure");
@@ -69,8 +68,7 @@ serveStill(bool wantBmp)
 }
 
 static void
-serveMjpeg()
-{
+serveMjpeg() {
   Serial.println("MJPEG streaming begin");
   WiFiClient client = server.client();
   auto startTime = millis();
@@ -80,8 +78,7 @@ serveMjpeg()
 }
 
 void
-addRequestHandlers()
-{
+addRequestHandlers() {
   server.on("/", HTTP_GET, [] {
     server.setContentLength(sizeof(FRONTPAGE));
     server.send(200, "text/html");

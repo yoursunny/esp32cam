@@ -9,8 +9,7 @@ esp32cam::Resolution initialResolution;
 WebServer server(80);
 
 void
-setup()
-{
+setup() {
   Serial.begin(115200);
   Serial.println();
   delay(2000);
@@ -53,7 +52,6 @@ setup()
 }
 
 void
-loop()
-{
+loop() {
   server.handleClient();
 }

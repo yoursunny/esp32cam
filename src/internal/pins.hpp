@@ -4,8 +4,7 @@
 namespace esp32cam {
 
 /** @brief Camera pins definition. */
-struct Pins
-{
+struct Pins {
   int D0;
   int D1;
   int D2;

@@ -15,29 +15,25 @@ namespace esp32cam {
 namespace asyncweb {
 
 /** @brief HTTP response of one still image. */
-class StillResponse : public AsyncAbstractResponse
-{
+class StillResponse : public AsyncAbstractResponse {
 public:
   /**
    * @brief Constructor.
    * @param frame a frame of still image.
    */
   explicit StillResponse(std::unique_ptr<Frame> frame)
-    : m_frame(std::move(frame))
-  {
+    : m_frame(std::move(frame)) {
     _code = 200;
     _contentType = determineMineType(*m_frame);
     _contentLength = m_frame->size();
     _sendContentLength = true;
   }
 
-  bool _sourceValid() const override
-  {
+  bool _sourceValid() const override {
     return true;
   }
 
-  size_t _fillBuffer(uint8_t* buf, size_t buflen) override
-  {
+  size_t _fillBuffer(uint8_t* buf, size_t buflen) override {
     if (m_index >= m_frame->size()) {
       return 0;
     }
@@ -55,8 +51,7 @@ public:
    *
    * This function must run as a FreeRTOS task. It self-deletes upon completion.
    */
-  static void captureTask(void* ctx)
-  {
+  static void captureTask(void* ctx) {
     auto request = reinterpret_cast<AsyncWebServerRequest*>(ctx);
 
     auto frame = Camera.capture();
@@ -70,8 +65,7 @@ public:
   }
 
 private:
-  static const char* determineMineType(const Frame& frame)
-  {
+  static const char* determineMineType(const Frame& frame) {
     if (frame.isJpeg()) {
       return "image/jpeg";
     }
@@ -99,8 +93,7 @@ private:
  * to do these, and then call this function.
  */
 inline void
-handleStill(AsyncWebServerRequest* request)
-{
+handleStill(AsyncWebServerRequest* request) {
   TaskHandle_t task;
   auto res = xTaskCreatePinnedToCore(StillResponse::captureTask, "esp32cam-still", 2048, request, 1,
                                      &task, xPortGetCoreID());
@@ -119,12 +112,10 @@ handleStill(AsyncWebServerRequest* request)
  * If task creation fails, respond with HTTP 500 error.
  * If image capture fails, the stream is stopped.
  */
-class MjpegResponse : public AsyncAbstractResponse
-{
+class MjpegResponse : public AsyncAbstractResponse {
 public:
   explicit MjpegResponse(const MjpegConfig& cfg = MjpegConfig())
-    : m_ctrl(cfg)
-  {
+    : m_ctrl(cfg) {
     m_queue = xQueueCreate(4, sizeof(Frame*));
     if (xTaskCreatePinnedToCore(captureTask, "esp32cam-mjpeg", 2048, this, 1, &m_task,
                                 xPortGetCoreID()) != pdPASS) {
@@ -142,8 +133,7 @@ public:
     _sendContentLength = false;
   }
 
-  ~MjpegResponse() override
-  {
+  ~MjpegResponse() override {
     if (m_task != nullptr) {
       vTaskDelete(m_task);
       m_task = nullptr;
@@ -159,13 +149,11 @@ public:
     }
   }
 
-  bool _sourceValid() const override
-  {
+  bool _sourceValid() const override {
     return true;
   }
 
-  size_t _fillBuffer(uint8_t* buf, size_t buflen) override
-  {
+  size_t _fillBuffer(uint8_t* buf, size_t buflen) override {
     auto act = m_ctrl.decideAction();
     switch (act) {
       case Ctrl::CAPTURE: {
@@ -201,8 +189,7 @@ public:
   }
 
 private:
-  static void captureTask(void* ctx)
-  {
+  static void captureTask(void* ctx) {
     auto self = reinterpret_cast<MjpegResponse*>(ctx);
     while (true) {
       uint32_t value = 0;
@@ -218,8 +205,7 @@ private:
     }
   }
 
-  size_t sendPart(uint8_t* buf, size_t buflen)
-  {
+  size_t sendPart(uint8_t* buf, size_t buflen) {
     if (m_sendRemain == 0) {
       switch (m_sendNext) {
         case SIPartHeader:
@@ -259,8 +245,7 @@ private:
   Ctrl m_ctrl;
   detail::MjpegHeader m_hdr;
 
-  enum SendItem
-  {
+  enum SendItem {
     SINone,
     SIPartHeader,
     SIFrame,
@@ -277,8 +262,7 @@ private:
  * To specify MjpegConfig, construct MjpegResponse directly.
  */
 inline void
-handleMjpeg(AsyncWebServerRequest* request)
-{
+handleMjpeg(AsyncWebServerRequest* request) {
   request->send(new MjpegResponse());
 }
 
