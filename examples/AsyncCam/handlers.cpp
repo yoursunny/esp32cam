@@ -98,12 +98,8 @@ addRequestHandlers() {
     long width = request->arg("width").toInt();
     long height = request->arg("height").toInt();
     auto r = esp32cam::Camera.listResolutions().find(width, height);
-    if (width == 0 || height == 0 || !r.isValid()) {
+    if (!(r.isValid() && r.getWidth() == width && r.getHeight() == height)) {
       request->send(404, "text/plain", "non-existent resolution\n");
-      return;
-    }
-    if (r.getWidth() != width || r.getHeight() != height) {
-      request->send(200);
       return;
     }
 
