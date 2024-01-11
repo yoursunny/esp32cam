@@ -42,8 +42,8 @@ Config::setPins(const Pins& pins)
   m_cfg->pin_pwdn = pins.PWDN;
   m_cfg->pin_reset = pins.RESET;
   m_cfg->pin_xclk = pins.XCLK;
-  m_cfg->pin_sscb_sda = pins.SDA;
-  m_cfg->pin_sscb_scl = pins.SCL;
+  m_cfg->pin_sccb_sda = pins.SDA;
+  m_cfg->pin_sccb_scl = pins.SCL;
   m_cfg->pin_d7 = pins.D7;
   m_cfg->pin_d6 = pins.D6;
   m_cfg->pin_d5 = pins.D5;

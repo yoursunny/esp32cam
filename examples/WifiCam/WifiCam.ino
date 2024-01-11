@@ -19,7 +19,7 @@ setup()
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("WiFi failure");
+    Serial.printf("WiFi failure %d\n", WiFi.status());
     delay(5000);
     ESP.restart();
   }
