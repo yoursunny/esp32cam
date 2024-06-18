@@ -173,12 +173,6 @@ public:
   size_t _fillBuffer(uint8_t* buf, size_t buflen) override {
     auto act = m_ctrl.decideAction();
     switch (act) {
-      case Ctrl::CAPTURE: {
-        xTaskNotify(m_task, 1, eSetValueWithOverwrite);
-        m_ctrl.notifyCapture();
-        ESP32CAM_ASYNCWEB_MJPEG_LOG("capturing");
-        return RESPONSE_TRY_AGAIN;
-      }
       case Ctrl::RETURN: {
         Frame* frame = nullptr;
         if (xQueueReceive(m_queue, &frame, 0) == pdTRUE) {
@@ -187,6 +181,7 @@ public:
         }
         m_sendNext = SIPartHeader;
         m_sendRemain = 0;
+
         if (m_ctrl.decideAction() != Ctrl::SEND) {
           return RESPONSE_TRY_AGAIN;
         }
@@ -197,9 +192,20 @@ public:
         if (len == 0 && m_sendNext == SINone) {
           m_ctrl.notifySent(true);
           ESP32CAM_ASYNCWEB_MJPEG_LOG("sent to client");
+        } else {
+          return len;
+        }
+
+        if (m_ctrl.decideAction() != Ctrl::CAPTURE) {
           return RESPONSE_TRY_AGAIN;
         }
-        return len;
+        // fallthrough
+      }
+      case Ctrl::CAPTURE: {
+        xTaskNotify(m_task, 1, eSetValueWithOverwrite);
+        m_ctrl.notifyCapture();
+        ESP32CAM_ASYNCWEB_MJPEG_LOG("capturing");
+        return RESPONSE_TRY_AGAIN;
       }
       case Ctrl::STOP:
         ESP32CAM_ASYNCWEB_MJPEG_LOG("stopping");
