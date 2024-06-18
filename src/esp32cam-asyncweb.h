@@ -7,6 +7,18 @@
 #include <freertos/queue.h>
 #include <freertos/task.h>
 
+#ifdef ESP32CAM_ASYNCWEB_LOGGER
+#define ESP32CAM_ASYNCWEB_LOG(fmt, ...)                                                            \
+  ESP32CAM_ASYNCWEB_LOGGER.printf("[%8lu] " fmt "\n", millis(), ##__VA_ARGS__)
+#else
+#define ESP32CAM_ASYNCWEB_LOG(...)                                                                 \
+  do {                                                                                             \
+  } while (false)
+#endif
+
+#define ESP32CAM_ASYNCWEB_MJPEG_LOG(fmt, ...)                                                      \
+  ESP32CAM_ASYNCWEB_LOG("MjpegResponse(%p) " fmt, this, ##__VA_ARGS__)
+
 namespace esp32cam {
 /**
  * @brief esp32cam integration with ESPAsyncWebServer library.
@@ -116,6 +128,7 @@ class MjpegResponse : public AsyncAbstractResponse {
 public:
   explicit MjpegResponse(const MjpegConfig& cfg = MjpegConfig())
     : m_ctrl(cfg) {
+    ESP32CAM_ASYNCWEB_MJPEG_LOG("created");
     m_queue = xQueueCreate(4, sizeof(Frame*));
     if (xTaskCreatePinnedToCore(captureTask, "esp32cam-mjpeg", 2048, this, 1, &m_task,
                                 xPortGetCoreID()) != pdPASS) {
@@ -147,6 +160,10 @@ public:
       vQueueDelete(m_queue);
       m_queue = nullptr;
     }
+
+    int nFrames = m_ctrl.countSentFrames();
+    float fps = 1000.0 * nFrames / (millis() - m_createTime);
+    ESP32CAM_ASYNCWEB_MJPEG_LOG("deleted after %d frames at fps %f", m_ctrl.countSentFrames(), fps);
   }
 
   bool _sourceValid() const override {
@@ -159,12 +176,14 @@ public:
       case Ctrl::CAPTURE: {
         xTaskNotify(m_task, 1, eSetValueWithOverwrite);
         m_ctrl.notifyCapture();
+        ESP32CAM_ASYNCWEB_MJPEG_LOG("capturing");
         return RESPONSE_TRY_AGAIN;
       }
       case Ctrl::RETURN: {
         Frame* frame = nullptr;
         if (xQueueReceive(m_queue, &frame, 0) == pdTRUE) {
           m_ctrl.notifyReturn(std::unique_ptr<Frame>(frame));
+          ESP32CAM_ASYNCWEB_MJPEG_LOG("frame has %zu octets", frame->size());
         }
         m_sendNext = SIPartHeader;
         m_sendRemain = 0;
@@ -177,11 +196,13 @@ public:
         size_t len = sendPart(buf, buflen);
         if (len == 0 && m_sendNext == SINone) {
           m_ctrl.notifySent(true);
+          ESP32CAM_ASYNCWEB_MJPEG_LOG("sent to client");
           return RESPONSE_TRY_AGAIN;
         }
         return len;
       }
       case Ctrl::STOP:
+        ESP32CAM_ASYNCWEB_MJPEG_LOG("stopping");
         return 0;
       default:
         return RESPONSE_TRY_AGAIN;
@@ -254,6 +275,7 @@ private:
   SendItem m_sendNext = SINone;
   const uint8_t* m_sendBuf = nullptr;
   size_t m_sendRemain = 0;
+  unsigned long m_createTime = millis();
 };
 
 /**
