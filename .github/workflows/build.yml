@@ -7,14 +7,16 @@ permissions: {}
 jobs:
   build:
     runs-on: ubuntu-22.04
+    env:
+      ARDUINO_BOARD_MANAGER_ADDITIONAL_URLS: |
+        https://espressif.github.io/arduino-esp32/package_esp32_index.json
     steps:
       - uses: arduino/setup-arduino-cli@v1
       - id: cores
         name: Refresh Arduino cores
         run: |
-          echo 'https://espressif.github.io/arduino-esp32/package_esp32_index.json' >~/arduino-cores.txt
           arduino-cli version
-          arduino-cli update --additional-urls "$(<~/arduino-cores.txt)"
+          arduino-cli update
           echo d=$(sha256sum ~/.arduino15/package_*index.json | sha256sum | cut -d' ' -f1) >> $GITHUB_OUTPUT
       - name: Cache Arduino cores
         uses: actions/cache@v4
@@ -23,7 +25,7 @@ jobs:
           key: cores-${{ steps.cores.outputs.d }}
       - name: Install Arduino cores
         run: |
-          arduino-cli core install esp32:esp32 --additional-urls "$(<~/arduino-cores.txt)"
+          arduino-cli core install esp32:esp32
       - name: Install dependencies
         run: |
           sudo apt-get install -y --no-install-recommends clang-format-15 doxygen
@@ -43,8 +45,8 @@ jobs:
           curl -fsLS https://github.com/me-no-dev/ESPAsyncWebServer/archive/${ESPASYNCWEBSERVER_VERSION}.tar.gz \
             | tar -C ESPAsyncWebServer -xz --strip-components=1
         env:
-          ASYNCTCP_VERSION: ca8ac5f919d02bea07b474531981ddbfd64de97c
-          ESPASYNCWEBSERVER_VERSION: 1d46269cedf477661ca8a29518414f4b74e957d4
+          ASYNCTCP_VERSION: 58cbe1fabe78977e3140391c01c03f0cb51e347c
+          ESPASYNCWEBSERVER_VERSION: 7f3753454b1f176c4b6d6bcd1587a135d95ca63c
       - name: Compile examples
         run: |
           arduino-cli compile -b esp32:esp32:esp32cam ./examples/WifiCam
@@ -52,7 +54,7 @@ jobs:
       - name: Build docs
         run: docs/build.sh
       - name: Deploy docs
-        uses: nwtgck/actions-netlify@v2.1.0
+        uses: nwtgck/actions-netlify@v3
         with:
           publish-dir: ./docs/html/
           production-deploy: true

@@ -63,16 +63,14 @@ serveStill(bool wantBmp) {
 
   server.setContentLength(frame->size());
   server.send(200, wantBmp ? "image/bmp" : "image/jpeg");
-  WiFiClient client = server.client();
-  frame->writeTo(client);
+  frame->writeTo(server.client());
 }
 
 static void
 serveMjpeg() {
   Serial.println("MJPEG streaming begin");
-  WiFiClient client = server.client();
   auto startTime = millis();
-  int nFrames = esp32cam::Camera.streamMjpeg(client);
+  int nFrames = esp32cam::Camera.streamMjpeg(server.client());
   auto duration = millis() - startTime;
   Serial.printf("MJPEG streaming end: %dfrm %0.2ffps\n", nFrames, 1000.0 * nFrames / duration);
 }

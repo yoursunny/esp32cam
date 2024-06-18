@@ -13,7 +13,7 @@ void
 setup() {
   Serial.begin(115200);
   Serial.println();
-  delay(2000);
+  delay(1000);
 
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
@@ -24,6 +24,7 @@ setup() {
     ESP.restart();
   }
   Serial.println("WiFi connected");
+  delay(1000);
 
   {
     using namespace esp32cam;
