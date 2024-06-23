@@ -7,25 +7,7 @@ permissions: {}
 jobs:
   build:
     runs-on: ubuntu-22.04
-    env:
-      ARDUINO_BOARD_MANAGER_ADDITIONAL_URLS: |
-        https://espressif.github.io/arduino-esp32/package_esp32_index.json
     steps:
-      - uses: arduino/setup-arduino-cli@v1
-      - id: cores
-        name: Refresh Arduino cores
-        run: |
-          arduino-cli version
-          arduino-cli update
-          echo d=$(sha256sum ~/.arduino15/package_*index.json | sha256sum | cut -d' ' -f1) >> $GITHUB_OUTPUT
-      - name: Cache Arduino cores
-        uses: actions/cache@v4
-        with:
-          path: ~/.arduino15/staging/packages
-          key: cores-${{ steps.cores.outputs.d }}
-      - name: Install Arduino cores
-        run: |
-          arduino-cli core install esp32:esp32
       - name: Install dependencies
         run: |
           sudo apt-get install -y --no-install-recommends clang-format-15 doxygen
@@ -34,23 +16,15 @@ jobs:
         run: |
           mk/format-code.sh
           git diff --exit-code
-      - name: Prepare Arduino libraries
-        run: |
-          mkdir -p $HOME/Arduino/libraries
-          cd $HOME/Arduino/libraries
-          ln -s $GITHUB_WORKSPACE esp32cam
-          mkdir -p AsyncTCP ESPAsyncWebServer
-          curl -fsLS https://github.com/me-no-dev/AsyncTCP/archive/${ASYNCTCP_VERSION}.tar.gz \
-            | tar -C AsyncTCP -xz --strip-components=1
-          curl -fsLS https://github.com/me-no-dev/ESPAsyncWebServer/archive/${ESPASYNCWEBSERVER_VERSION}.tar.gz \
-            | tar -C ESPAsyncWebServer -xz --strip-components=1
-        env:
-          ASYNCTCP_VERSION: 58cbe1fabe78977e3140391c01c03f0cb51e347c
-          ESPASYNCWEBSERVER_VERSION: 7f3753454b1f176c4b6d6bcd1587a135d95ca63c
-      - name: Compile examples
-        run: |
-          arduino-cli compile -b esp32:esp32:esp32cam ./examples/WifiCam
-          arduino-cli compile -b esp32:esp32:esp32cam ./examples/AsyncCam
+      - uses: arduino/compile-sketches@v1
+        with:
+          fqbn: esp32:esp32:esp32cam
+          libraries: |
+            - source-path: ./
+            - source-url: https://github.com/me-no-dev/AsyncTCP.git
+              version: 58cbe1fabe78977e3140391c01c03f0cb51e347c
+            - source-url: https://github.com/me-no-dev/ESPAsyncWebServer.git
+              version: 7f3753454b1f176c4b6d6bcd1587a135d95ca63c
       - name: Build docs
         run: docs/build.sh
       - name: Deploy docs
