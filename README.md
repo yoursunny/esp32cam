@@ -14,7 +14,8 @@ This library has been tested with AI Thinker [ESP32-CAM](https://docs.ai-thinker
 
 ## Installation
 
-1. Clone this repository under `$HOME/Arduino/libraries` directory.
-2. Add `#include <esp32cam.h>` to your sketch.
+1. Install [ESP32 Arduino core](https://github.com/espressif/arduino-esp32) v3.x.
+2. Clone this repository under `$HOME/Arduino/libraries` directory.
 3. In *Tools* - *Board* menu, select **AI Thinker ESP32-CAM** to enable 4MB external PSRAM.
-4. Check out the [examples](examples/) for how to use.
+4. Add `#include <esp32cam.h>` to your sketch.
+5. Check out the [examples](examples/) for how to use.
