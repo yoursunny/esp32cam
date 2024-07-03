@@ -47,8 +47,6 @@ public:
    */
   std::unique_ptr<Frame> capture();
 
-  struct [[deprecated("use esp32cam::MjpegConfig")]] StreamMjpegConfig : MjpegConfig{};
-
   /**
    * @brief Stream Motion JPEG.
    * @pre The camera has been initialized to JPEG mode.
