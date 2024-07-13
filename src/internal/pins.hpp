@@ -45,6 +45,26 @@ constexpr Pins AiThinker{
   PWDN: 32,
 };
 
+/** @brief Pin definition for Seeed Studio XIAO ESP32S3 Sense. */
+constexpr Pins XiaoSense{
+  D0: 15,
+  D1: 17,
+  D2: 18,
+  D3: 16,
+  D4: 14,
+  D5: 12,
+  D6: 11,
+  D7: 48,
+  XCLK: 10,
+  PCLK: 13,
+  VSYNC: 38,
+  HREF: 47,
+  SDA: 40,
+  SCL: 39,
+  RESET: -1,
+  PWDN: -1,
+};
+
 /** @brief Pin definition for FREENOVE WROVER ESP32-CAM. */
 constexpr Pins FreeNove{
   D0: 4,
