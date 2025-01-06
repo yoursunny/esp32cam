@@ -7,6 +7,7 @@
 #ifndef ESP32CAM_H
 #define ESP32CAM_H
 
+#include "esp32cam/asyncweb.hpp"
 #include "esp32cam/camera.hpp"
 
 namespace esp32cam {

@@ -113,7 +113,7 @@ addRequestHandlers() {
     Serial.printf("changeResolution(%ld,%ld) success\n", width, height);
     StreamString b;
     b.print(currentResolution);
-    request->send(b, "text/plain", b.length());
+    request->send(200, "text/plain", static_cast<String>(b));
   });
 
   server.on("/cam.jpg", esp32cam::asyncweb::handleStill);

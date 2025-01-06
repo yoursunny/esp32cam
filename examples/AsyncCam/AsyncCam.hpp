@@ -1,13 +1,11 @@
 #ifndef ASYNCCAM_HPP
 #define ASYNCCAM_HPP
 
-// This macro indicates where to send debug logs.
-// Delete this macro to disable debug logging.
-#define ESP32CAM_ASYNCWEB_LOGGER Serial
-
-#include <esp32cam-asyncweb.h>
-
+// It is necessary to include ESPAsyncWebServer.h before esp32cam.h for Arduino builder to
+// recognize the dependency.
 #include <ESPAsyncWebServer.h>
+
+#include <esp32cam.h>
 
 extern esp32cam::Resolution initialResolution;
 extern esp32cam::Resolution currentResolution;
