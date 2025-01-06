@@ -21,10 +21,10 @@ jobs:
           fqbn: esp32:esp32:esp32cam
           libraries: |
             - source-path: ./
-            - source-url: https://github.com/me-no-dev/AsyncTCP.git
-              version: 58cbe1fabe78977e3140391c01c03f0cb51e347c
-            - source-url: https://github.com/me-no-dev/ESPAsyncWebServer.git
-              version: 7f3753454b1f176c4b6d6bcd1587a135d95ca63c
+            - name: Async TCP
+            - name: ESP Async WebServer
+          # https://github.com/mathieucarbou/AsyncTCP
+          # https://github.com/mathieucarbou/ESPAsyncWebServer
       - name: Build docs
         run: docs/build.sh
       - name: Deploy docs

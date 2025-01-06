@@ -86,8 +86,8 @@ rewriteFrontpage(const String& var) {
 void
 addRequestHandlers() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-    request->send_P(200, "text/html", reinterpret_cast<const uint8_t*>(FRONTPAGE),
-                    sizeof(FRONTPAGE), rewriteFrontpage);
+    request->send(200, "text/html", reinterpret_cast<const uint8_t*>(FRONTPAGE), sizeof(FRONTPAGE),
+                  rewriteFrontpage);
   });
 
   server.on("/robots.txt", HTTP_GET, [](AsyncWebServerRequest* request) {

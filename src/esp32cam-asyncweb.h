@@ -4,8 +4,8 @@
 #include "esp32cam.h"
 
 #include <ESPAsyncWebServer.h>
-#include <freertos/queue.h>
-#include <freertos/task.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/idf_additions.h>
 
 #ifdef ESP32CAM_ASYNCWEB_LOGGER
 #define ESP32CAM_ASYNCWEB_LOG(fmt, ...)                                                            \
@@ -22,7 +22,7 @@
 namespace esp32cam {
 /**
  * @brief esp32cam integration with ESPAsyncWebServer library.
- * @sa https://github.com/me-no-dev/ESPAsyncWebServer
+ * @sa https://github.com/mathieucarbou/ESPAsyncWebServer
  */
 namespace asyncweb {
 
@@ -103,6 +103,10 @@ private:
  *
  * To perform authentication or other operations before image capture, create another HTTP handler
  * to do these, and then call this function.
+ *
+ * @bug
+ * This handler is currently broken: ESPAsyncWebServer expects request->send(response) to be
+ * called before this function returns; otherwise it will generate 501 response.
  */
 inline void
 handleStill(AsyncWebServerRequest* request) {
