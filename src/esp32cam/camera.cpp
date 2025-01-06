@@ -5,6 +5,7 @@
 
 namespace esp32cam {
 
+Print* LogOutput = nullptr;
 CameraClass Camera;
 
 bool

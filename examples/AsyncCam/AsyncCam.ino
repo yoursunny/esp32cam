@@ -13,6 +13,7 @@ void
 setup() {
   Serial.begin(115200);
   Serial.println();
+  esp32cam::setLogger(Serial);
   delay(1000);
 
   WiFi.persistent(false);
@@ -56,7 +57,7 @@ setup() {
 
 void
 loop() {
-  // esp32cam-asyncweb.h depends on FreeRTOS task API including vTaskDelete, so you must have a
+  // esp32cam/asyncweb.hpp depends on FreeRTOS task API including vTaskDelete, so you must have a
   // non-zero delay in the loop() function; otherwise, FreeRTOS kernel memory cannot be freed
   // properly and the system would run out of memory.
   delay(1);

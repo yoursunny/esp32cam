@@ -9,6 +9,7 @@
 
 #include "esp32cam/asyncweb.hpp"
 #include "esp32cam/camera.hpp"
+#include "esp32cam/logger.hpp"
 
 namespace esp32cam {
 

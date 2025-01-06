@@ -52,6 +52,8 @@ class StillResponse : public AsyncAbstractResponse {
 public:
   explicit StillResponse();
 
+  ~StillResponse() override;
+
   bool _sourceValid() const override {
     return true;
   }

@@ -91,7 +91,7 @@ addRequestHandlers() {
   });
 
   server.on("/robots.txt", HTTP_GET, [](AsyncWebServerRequest* request) {
-    request->send(200, "text/html", "User-Agent: *\nDisallow: /\n");
+    request->send(200, "text/plain", "User-Agent: *\nDisallow: /\n");
   });
 
   server.on("/change-resolution.cgi", HTTP_POST, [](AsyncWebServerRequest* request) {

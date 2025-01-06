@@ -1,10 +1,12 @@
 #if __has_include(<ESPAsyncWebServer.h>)
 
 #include "asyncweb.hpp"
+#include "logger.hpp"
 #include <freertos/FreeRTOS.h>
 #include <freertos/idf_additions.h>
 
-#define MJPEG_LOG(fmt, ...) Serial.printf("MjpegResponse(%p) " fmt "\n", this, ##__VA_ARGS__)
+#define STILL_LOG(fmt, ...) ESP32CAM_LOG("StillResponse(%p) " fmt, this, ##__VA_ARGS__)
+#define MJPEG_LOG(fmt, ...) ESP32CAM_LOG("MjpegResponse(%p) " fmt, this, ##__VA_ARGS__)
 
 namespace esp32cam {
 namespace detail {
@@ -79,6 +81,7 @@ namespace asyncweb {
 
 StillResponse::StillResponse()
   : m_task(1) {
+  STILL_LOG("created");
   if (!m_task) {
     _code = 500;
     return;
@@ -90,15 +93,21 @@ StillResponse::StillResponse()
   m_task.request();
 }
 
+StillResponse::~StillResponse() {
+  STILL_LOG("deleted");
+}
+
 size_t
 StillResponse::_fillBuffer(uint8_t* buf, size_t buflen) {
   if (!m_frame) {
     if (m_frame = m_task.retrieve(); !m_frame) {
       return RESPONSE_TRY_AGAIN;
     }
+    STILL_LOG("frame has %zu octets", m_frame->size());
   }
 
   if (m_index >= m_frame->size()) {
+    STILL_LOG("sent to client");
     return 0;
   }
 
