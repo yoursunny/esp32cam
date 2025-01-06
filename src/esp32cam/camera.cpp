@@ -54,6 +54,15 @@ CameraClass::changeResolution(const Resolution& resolution, int sleepFor) {
   return true;
 }
 
+bool
+CameraClass::update(const SensorSetter& setter) {
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+  return setter(sensor);
+}
+
 std::unique_ptr<Frame>
 CameraClass::capture() {
   camera_fb_t* fb = esp_camera_fb_get();

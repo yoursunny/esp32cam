@@ -3,6 +3,7 @@
 
 #include "config.hpp"
 #include "mjpeg.hpp"
+#include "setters.hpp"
 
 namespace esp32cam {
 
@@ -33,6 +34,18 @@ public:
    * @param sleepFor how long to wait for stabilization (millis).
    */
   bool changeResolution(const Resolution& resolution, int sleepFor = 500);
+
+  /**
+   * @brief Update camera configuration.
+   * @param setter See `setters.hpp`.
+   * @return whether success.
+   *
+   * Example:
+   * @code
+   * bool ok = Camera.update(SetVflip(true));
+   * @endcode
+   */
+  bool update(const SensorSetter& setter);
 
   /**
    * @brief Capture a frame of picture.

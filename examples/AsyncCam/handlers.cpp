@@ -11,6 +11,10 @@ Resolution
 <select id="resolution" required>%RESOLUTION_OPTIONS%</select>
 <input type="submit" value="change">
 </p></form>
+<p id="toggles">
+<label><input type="checkbox" data-act="hmirror">hmirror</label>
+<label><input type="checkbox" data-act="vflip">vflip</label>
+</p>
 <p id="controls">
 <button data-act="mjpeg">show Motion JPEG stream</button>
 <button data-act="jpg">show still JPEG image</button>
@@ -34,7 +38,7 @@ $resolution.form.addEventListener("submit", async (evt) => {
   evt.preventDefault();
   const [width, height] = $resolution.value.split("x");
   try {
-    const change = await fetchText("/change-resolution.cgi", {
+    await fetchText("/change-resolution.cgi", {
       method: "POST",
       body: new URLSearchParams({ width, height }),
     });
@@ -42,6 +46,21 @@ $resolution.form.addEventListener("submit", async (evt) => {
     $display.textContent = err.toString();
   }
 });
+
+for (const $ctrl of document.querySelectorAll("#toggles input[type=checkbox]")) {
+  $ctrl.addEventListener("change", async (evt) => {
+    evt.preventDefault();
+    const act = evt.target.getAttribute("data-act");
+    try {
+      await fetchText(`/set-${act}.cgi`, {
+        method: "POST",
+        body: new URLSearchParams({ enable: Number(evt.target.checked) }),
+      });
+    } catch (err) {
+      $display.textContent = err.toString();
+    }
+  });
+}
 
 for (const $ctrl of document.querySelectorAll("#controls button")) {
   $ctrl.addEventListener("click", (evt) => {
@@ -114,6 +133,26 @@ addRequestHandlers() {
     StreamString b;
     b.print(currentResolution);
     request->send(200, "text/plain", static_cast<String>(b));
+  });
+
+  server.on("/set-hmirror.cgi", HTTP_POST, [](AsyncWebServerRequest* request) {
+    long enable = request->arg("enable").toInt();
+    if (!esp32cam::Camera.update(esp32cam::SetHmirror(enable != 0))) {
+      request->send(500, "text/plain", "SetHmirror error\n");
+      return;
+    }
+    Serial.printf("SetHmirror(%ld) success\n", enable);
+    request->send(200, "text/plain", "SetHmirror success\n");
+  });
+
+  server.on("/set-vflip.cgi", HTTP_POST, [](AsyncWebServerRequest* request) {
+    long enable = request->arg("enable").toInt();
+    if (!esp32cam::Camera.update(esp32cam::SetVflip(enable != 0))) {
+      request->send(500, "text/plain", "SetVflip error\n");
+      return;
+    }
+    Serial.printf("SetVflip(%ld) success\n", enable);
+    request->send(200, "text/plain", "SetVflip success\n");
   });
 
   server.on("/cam.jpg", esp32cam::asyncweb::handleStill);
