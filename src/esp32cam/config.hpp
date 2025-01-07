@@ -13,7 +13,7 @@ convertJpegQuality(int quality);
 
 } // namespace detail
 
-/** @brief Camera configuration. */
+/** @brief Camera initialization configuration. */
 class Config {
 public:
   Config();
@@ -56,6 +56,15 @@ private:
 struct Settings {
   /** @brief Picture resolution. */
   Resolution resolution;
+
+  /** @brief Image brightness, between -2 and +2. */
+  int8_t brightness;
+
+  /** @brief Image contrast, between -2 and +2. */
+  int8_t contrast;
+
+  /** @brief Image saturation, between -2 and +2. */
+  int8_t saturation;
 
   /** @brief Horizontal flip. */
   bool hmirror = false;

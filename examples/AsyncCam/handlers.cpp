@@ -8,6 +8,9 @@ static const char FRONTPAGE[] = R"EOT(
 <h1>esp32cam AsyncCam example</h1>
 <form id="update"><p>
 <select name="resolution" required>%resolution%</select>
+%brightness%
+%contrast%
+%saturation%
 %hmirror%
 %vflip%
 <input type="submit" value="update">
@@ -28,18 +31,20 @@ async function fetchText(uri, init) {
   return (await response.text()).trim().replaceAll("\r\n", "\n");
 }
 
+const $update = document.querySelector("#update");
 const $display = document.querySelector("#display");
-document.querySelector("#update").addEventListener("submit", async (evt) => {
+$update.addEventListener("submit", async (evt) => {
   evt.preventDefault();
   try {
     await fetchText("/update.cgi", {
       method: "POST",
-      body: new URLSearchParams(new FormData(evt.target)),
+      body: new URLSearchParams(new FormData($update)),
     });
   } catch (err) {
     $display.textContent = err.toString();
   }
 });
+$update.reset();
 
 for (const $ctrl of document.querySelectorAll("#controls button")) {
   $ctrl.addEventListener("click", (evt) => {
@@ -62,61 +67,84 @@ for (const $ctrl of document.querySelectorAll("#controls button")) {
 )EOT";
 
 static String
-rewriteFrontpage(const esp32cam::Settings& settings, const String& var) {
+rewriteFrontpage(const esp32cam::Settings& s, const String& var) {
   StreamString b;
 
   if (var == "resolution") {
     for (const auto& r : esp32cam::Camera.listResolutions()) {
       b.printf("<option value=\"%d\"%s>", r.as<int>(),
-               r > initialResolution      ? " disabled"
-               : r == settings.resolution ? " selected"
-                                          : "");
+               r > initialResolution ? " disabled"
+               : r == s.resolution   ? " selected"
+                                     : "");
       b.print(r);
       b.print("</option>");
     }
   }
 
+#define SETTING_INT(MEM, MIN, MAX)                                                                 \
+  else if (var == #MEM) {                                                                          \
+    b.printf("<label>" #MEM "=<input type=\"number\" name=\"" #MEM                                 \
+             "\" value=\"%d\" min=\"%d\" max=\"%d\"></label>",                                     \
+             s.MEM, MIN, MAX);                                                                     \
+  }
+
 #define SETTING_BOOL(MEM)                                                                          \
   else if (var == #MEM) {                                                                          \
     b.printf("<label><input type=\"checkbox\" name=\"" #MEM "\" value=\"1\"%s>" #MEM "</label>",   \
-             settings.MEM ? " checked" : "");                                                      \
+             s.MEM ? " checked" : "");                                                             \
   }
 
+  SETTING_INT(brightness, -2, 2)
+  SETTING_INT(contrast, -2, 2)
+  SETTING_INT(saturation, -2, 2)
   SETTING_BOOL(hmirror)
   SETTING_BOOL(vflip)
 
+#undef SETTING_INT
 #undef SETTING_BOOL
 
   return b;
 }
 
 static void
-handleFrontpage(AsyncWebServerRequest* request) {
+handleFrontpage(AsyncWebServerRequest* req) {
   auto settings = esp32cam::Camera.status();
-  request->send(200, "text/html", reinterpret_cast<const uint8_t*>(FRONTPAGE), sizeof(FRONTPAGE),
-                [=](const String& var) { return rewriteFrontpage(settings, var); });
+  req->send(200, "text/html", reinterpret_cast<const uint8_t*>(FRONTPAGE), sizeof(FRONTPAGE),
+            [=](const String& var) { return rewriteFrontpage(settings, var); });
 }
 
 static void
-handleUpdate(AsyncWebServerRequest* request) {
-  bool ok = esp32cam::Camera.update([=](esp32cam::Settings& settings) {
-    settings.resolution =
-      esp32cam::Resolution(static_cast<int>(request->arg("resolution").toInt()));
-    settings.hmirror = request->arg("hmirror").toInt() != 0;
-    settings.vflip = request->arg("vflip").toInt() != 0;
+handleUpdate(AsyncWebServerRequest* req) {
+  bool ok = esp32cam::Camera.update([=](esp32cam::Settings& s) {
+#define UPDATE(MEM)                                                                                \
+  do {                                                                                             \
+    if constexpr (std::is_same_v<decltype(s.MEM), bool>) {                                         \
+      s.MEM = req->hasArg(#MEM);                                                                   \
+    } else {                                                                                       \
+      s.MEM = static_cast<decltype(s.MEM)>(req->arg(#MEM).toInt());                                \
+    }                                                                                              \
+  } while (false)
+    s.resolution = esp32cam::Resolution(static_cast<int>(req->arg("resolution").toInt()));
+    UPDATE(brightness);
+    UPDATE(contrast);
+    UPDATE(saturation);
+    UPDATE(hmirror);
+    UPDATE(vflip);
+
+#undef UPDATE
   });
 
   if (!ok) {
-    request->send(500, "text/plain", "update settings error\n");
+    req->send(500, "text/plain", "update settings error\n");
     return;
   }
-  request->send(204);
+  req->send(204);
 }
 
 void
 addRequestHandlers() {
-  server.on("/robots.txt", HTTP_GET, [](AsyncWebServerRequest* request) {
-    request->send(200, "text/plain", "User-Agent: *\nDisallow: /\n");
+  server.on("/robots.txt", HTTP_GET, [](AsyncWebServerRequest* req) {
+    req->send(200, "text/plain", "User-Agent: *\nDisallow: /\n");
   });
 
   server.on("/", HTTP_GET, handleFrontpage);

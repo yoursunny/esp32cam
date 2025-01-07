@@ -101,6 +101,9 @@ CameraClass::status() const {
   }
 
   result.resolution = Resolution(sensor->status.framesize);
+  result.brightness = sensor->status.brightness;
+  result.contrast = sensor->status.contrast;
+  result.saturation = sensor->status.saturation;
   result.hmirror = sensor->status.hmirror != 0;
   result.vflip = sensor->status.vflip != 0;
   return result;
@@ -113,10 +116,19 @@ CameraClass::update(const Settings& settings, int sleepFor) {
     return false;
   }
 
+#define CHECK_RANGE(MEM, MIN, MAX)                                                                 \
+  do {                                                                                             \
+    if (!(settings.MEM >= MIN && settings.MEM <= MAX)) {                                           \
+      ESP32CAM_LOG("update " #MEM " %d out of range [%d,%d]", static_cast<int>(settings.MEM), MIN, \
+                   MAX);                                                                           \
+      return false;                                                                                \
+    }                                                                                              \
+  } while (false)
+
 #define UPDATE(STATUS_MEM, SETTING_MEM, SETTER_TYP)                                                \
   do {                                                                                             \
     auto prev = sensor->status.STATUS_MEM;                                                         \
-    if (prev != static_cast<decltype(sensor->status.STATUS_MEM)>(settings.SETTING_MEM)) {          \
+    if (prev != static_cast<decltype(prev)>(settings.SETTING_MEM)) {                               \
       int res = sensor->set_##STATUS_MEM(sensor, static_cast<SETTER_TYP>(settings.SETTING_MEM));   \
       ESP32CAM_LOG("update " #STATUS_MEM " %d => %d %s", static_cast<int>(prev),                   \
                    static_cast<int>(settings.SETTING_MEM), res == 0 ? "success" : "failure");      \
@@ -125,13 +137,20 @@ CameraClass::update(const Settings& settings, int sleepFor) {
       }                                                                                            \
     }                                                                                              \
   } while (false)
-
 #define UPDATE1(MEM) UPDATE(MEM, MEM, int)
 
+  CHECK_RANGE(brightness, -2, 2);
+  CHECK_RANGE(contrast, -2, 2);
+  CHECK_RANGE(saturation, -2, 2);
+
   UPDATE(framesize, resolution.as<framesize_t>(), framesize_t);
+  UPDATE1(brightness);
+  UPDATE1(contrast);
+  UPDATE1(saturation);
   UPDATE1(hmirror);
   UPDATE1(vflip);
 
+#undef CHECK_RANGE
 #undef UPDATE
 #undef UPDATE1
 
