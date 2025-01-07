@@ -5,10 +5,6 @@
 
 namespace esp32cam {
 
-// extern ESP32CAM_SPECIALIZE_SENSOR_SETTING(framesize_t, framesize_t);
-
-// static SensorSetting<framesize_t, framesize_t> frameSize(ESP32CAM_SENSOR_OFFSETS(framesize));
-
 Print* LogOutput = nullptr;
 CameraClass Camera;
 

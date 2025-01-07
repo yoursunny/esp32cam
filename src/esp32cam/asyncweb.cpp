@@ -145,7 +145,6 @@ MjpegResponse::_fillBuffer(uint8_t* buf, size_t buflen) {
   switch (act) {
     case Ctrl::RETURN: {
       if (auto frame = m_task.retrieve(); frame) {
-        MJPEG_LOG("frame has %zu octets", frame->size());
         m_ctrl.notifyReturn(std::move(frame));
       }
       m_sendNext = SIPartHeader;
@@ -160,7 +159,6 @@ MjpegResponse::_fillBuffer(uint8_t* buf, size_t buflen) {
       size_t len = sendPart(buf, buflen);
       if (len == 0 && m_sendNext == SINone) {
         m_ctrl.notifySent(true);
-        MJPEG_LOG("sent to client");
       } else {
         return len;
       }
@@ -173,11 +171,9 @@ MjpegResponse::_fillBuffer(uint8_t* buf, size_t buflen) {
     case Ctrl::CAPTURE: {
       m_task.request();
       m_ctrl.notifyCapture();
-      MJPEG_LOG("capturing");
       return RESPONSE_TRY_AGAIN;
     }
     case Ctrl::STOP:
-      MJPEG_LOG("stopping");
       return 0;
     default:
       return RESPONSE_TRY_AGAIN;

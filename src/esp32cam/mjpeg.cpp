@@ -1,6 +1,7 @@
 #include "mjpeg.hpp"
+#include "logger.hpp"
 
-#include <Arduino.h>
+#define MC_LOG(fmt, ...) ESP32CAM_LOG("MjpegController(%p) " fmt, this, ##__VA_ARGS__)
 
 namespace esp32cam {
 namespace detail {
@@ -25,21 +26,26 @@ void
 MjpegController::notifyCapture() {
   m_nextAction = RETURN;
   m_nextCaptureTime = millis() + static_cast<unsigned long>(m_cfg.minInterval);
+  MC_LOG("notifyCapture next=%lu", m_nextCaptureTime);
 }
 
 void
 MjpegController::notifyReturn(std::unique_ptr<Frame> frame) {
   if (frame == nullptr) {
+    MC_LOG("notifyReturn frame=nullptr");
     notifyFail();
     return;
   }
   m_frame = std::move(frame);
+  MC_LOG("notifyReturn frame=%p size=%zu dimension=%dx%d", m_frame->data(), m_frame->size(),
+         m_frame->getWidth(), m_frame->getHeight());
   m_nextAction = SEND;
 }
 
 void
 MjpegController::notifySent(bool ok) {
   ++m_count;
+  MC_LOG("notifySent count=%d ok=%d", m_count, static_cast<int>(ok));
   if (!ok) {
     notifyFail();
     return;
@@ -50,6 +56,7 @@ MjpegController::notifySent(bool ok) {
 
 void
 MjpegController::notifyFail() {
+  MC_LOG("notifyFail");
   m_frame.reset();
   m_nextAction = STOP;
 }
