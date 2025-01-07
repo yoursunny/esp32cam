@@ -7,10 +7,12 @@ static const char FRONTPAGE[] = R"EOT(
 <body>
 <h1>esp32cam AsyncCam example</h1>
 <form id="update"><p>
-<select name="resolution" required>%resolution%</select>
+<select name="resolution">%resolution%</select>
 %brightness%
 %contrast%
 %saturation%
+<select name="lightMode" title="light mode">%lightMode%</select>
+<select name="specialEffect" title="special effect">%specialEffect%</select>
 %hmirror%
 %vflip%
 <input type="submit" value="update">
@@ -38,7 +40,7 @@ $update.addEventListener("submit", async (evt) => {
   try {
     await fetchText("/update.cgi", {
       method: "POST",
-      body: new URLSearchParams(new FormData($update)),
+      body: new FormData($update),
     });
   } catch (err) {
     $display.textContent = err.toString();
@@ -79,30 +81,52 @@ rewriteFrontpage(const esp32cam::Settings& s, const String& var) {
       b.print(r);
       b.print("</option>");
     }
+  } else if (var == "lightMode") {
+#define SHOW_LM(MODE, SYMBOL)                                                                      \
+  b.printf("<option value=\"%d\" title=\"%s\"%s>%s</option>",                                      \
+           static_cast<int>(esp32cam::LightMode::MODE), #MODE,                                     \
+           s.lightMode == esp32cam::LightMode::MODE ? " selected" : "", SYMBOL)
+    SHOW_LM(AUTO, "&#x2B55;");
+    SHOW_LM(SUNNY, "&#x2600;&#xFE0F;");
+    SHOW_LM(CLOUDY, "&#x2601;&#xFE0F;");
+    SHOW_LM(OFFICE, "&#x1F3E2;");
+    SHOW_LM(HOME, "&#x1F3E0;");
+#undef SHOW_LM
+  } else if (var == "specialEffect") {
+#define SHOW_SE(MODE, SYMBOL)                                                                      \
+  b.printf("<option value=\"%d\" title=\"%s\"%s>%s</option>",                                      \
+           static_cast<int>(esp32cam::SpecialEffect::MODE), #MODE,                                 \
+           s.specialEffect == esp32cam::SpecialEffect::MODE ? " selected" : "", SYMBOL)
+    SHOW_SE(NONE, "&#x1F6AB;");
+    SHOW_SE(NEGATIVE, "&#x2B1C;");
+    SHOW_SE(BLACKWHITE, "&#x2B1B;");
+    SHOW_SE(REDDISH, "&#x1F7E5;");
+    SHOW_SE(GREENISH, "&#x1F7E9;");
+    SHOW_SE(BLUISH, "&#x1F7E6;");
+    SHOW_SE(ANTIQUE, "&#x1F5BC;&#xFE0F;");
+#undef SHOW_SE
   }
 
-#define SETTING_INT(MEM, MIN, MAX)                                                                 \
+#define SHOW_INT(MEM, MIN, MAX)                                                                    \
   else if (var == #MEM) {                                                                          \
     b.printf("<label>" #MEM "=<input type=\"number\" name=\"" #MEM                                 \
              "\" value=\"%d\" min=\"%d\" max=\"%d\"></label>",                                     \
              s.MEM, MIN, MAX);                                                                     \
   }
 
-#define SETTING_BOOL(MEM)                                                                          \
+#define SHOW_BOOL(MEM)                                                                             \
   else if (var == #MEM) {                                                                          \
     b.printf("<label><input type=\"checkbox\" name=\"" #MEM "\" value=\"1\"%s>" #MEM "</label>",   \
              s.MEM ? " checked" : "");                                                             \
   }
 
-  SETTING_INT(brightness, -2, 2)
-  SETTING_INT(contrast, -2, 2)
-  SETTING_INT(saturation, -2, 2)
-  SETTING_BOOL(hmirror)
-  SETTING_BOOL(vflip)
-
-#undef SETTING_INT
-#undef SETTING_BOOL
-
+  SHOW_INT(brightness, -2, 2)
+  SHOW_INT(contrast, -2, 2)
+  SHOW_INT(saturation, -2, 2)
+  SHOW_BOOL(hmirror)
+  SHOW_BOOL(vflip)
+#undef SHOW_INT
+#undef SHOW_BOOL
   return b;
 }
 
@@ -116,22 +140,18 @@ handleFrontpage(AsyncWebServerRequest* req) {
 static void
 handleUpdate(AsyncWebServerRequest* req) {
   bool ok = esp32cam::Camera.update([=](esp32cam::Settings& s) {
-#define UPDATE(MEM)                                                                                \
-  do {                                                                                             \
-    if constexpr (std::is_same_v<decltype(s.MEM), bool>) {                                         \
-      s.MEM = req->hasArg(#MEM);                                                                   \
-    } else {                                                                                       \
-      s.MEM = static_cast<decltype(s.MEM)>(req->arg(#MEM).toInt());                                \
-    }                                                                                              \
-  } while (false)
-    s.resolution = esp32cam::Resolution(static_cast<int>(req->arg("resolution").toInt()));
-    UPDATE(brightness);
-    UPDATE(contrast);
-    UPDATE(saturation);
-    UPDATE(hmirror);
-    UPDATE(vflip);
-
-#undef UPDATE
+#define SAVE_BOOL(MEM) s.MEM = req->hasArg(#MEM)
+#define SAVE_INT(MEM) s.MEM = decltype(s.MEM)(req->arg(#MEM).toInt())
+    SAVE_INT(resolution);
+    SAVE_INT(brightness);
+    SAVE_INT(contrast);
+    SAVE_INT(saturation);
+    SAVE_INT(lightMode);
+    SAVE_INT(specialEffect);
+    SAVE_BOOL(hmirror);
+    SAVE_BOOL(vflip);
+#undef SAVE_BOOL
+#undef SAVE_INT
   });
 
   if (!ok) {

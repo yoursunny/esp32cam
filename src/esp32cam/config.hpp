@@ -52,6 +52,26 @@ private:
   friend class CameraClass;
 };
 
+/** @brief Light mode / white balance values. */
+enum class LightMode {
+  AUTO = 0,
+  SUNNY = 1,
+  CLOUDY = 2,
+  OFFICE = 3,
+  HOME = 4,
+};
+
+/** @brief Special effect values. */
+enum class SpecialEffect {
+  NONE = 0,
+  NEGATIVE = 1,
+  BLACKWHITE = 2,
+  REDDISH = 3,
+  GREENISH = 4,
+  BLUISH = 5,
+  ANTIQUE = 6,
+};
+
 /** @brief Camera runtime settings. */
 struct Settings {
   /** @brief Picture resolution. */
@@ -65,6 +85,12 @@ struct Settings {
 
   /** @brief Image saturation, between -2 and +2. */
   int8_t saturation;
+
+  /** @brief Image light mode. */
+  LightMode lightMode;
+
+  /** @brief Image special effect. */
+  SpecialEffect specialEffect;
 
   /** @brief Horizontal flip. */
   bool hmirror = false;
