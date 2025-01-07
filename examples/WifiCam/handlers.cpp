@@ -115,11 +115,11 @@ addRequestHandlers() {
       return;
     }
 
-    if (!esp32cam::Camera.changeResolution(r)) {
-      Serial.printf("changeResolution(%ld,%ld) failure\n", width, height);
-      server.send(500, "text/plain", "changeResolution error\n");
+    if (!esp32cam::Camera.update([=](esp32cam::Settings& settings) { settings.resolution = r; },
+                                 500)) {
+      server.send(500, "text/plain", "update resolution error\n");
+      return;
     }
-    Serial.printf("changeResolution(%ld,%ld) success\n", width, height);
 
     if (format == "bmp") {
       serveStill(true);

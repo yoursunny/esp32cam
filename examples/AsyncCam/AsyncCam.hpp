@@ -8,7 +8,6 @@
 #include <esp32cam.h>
 
 extern esp32cam::Resolution initialResolution;
-extern esp32cam::Resolution currentResolution;
 
 extern AsyncWebServer server;
 

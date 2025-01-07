@@ -12,6 +12,7 @@ void
 setup() {
   Serial.begin(115200);
   Serial.println();
+  esp32cam::setLogger(Serial);
   delay(1000);
 
   WiFi.persistent(false);

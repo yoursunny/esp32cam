@@ -6,15 +6,12 @@ static const char FRONTPAGE[] = R"EOT(
 <title>esp32cam AsyncCam example</title>
 <body>
 <h1>esp32cam AsyncCam example</h1>
-<form><p>
-Resolution
-<select id="resolution" required>%RESOLUTION_OPTIONS%</select>
-<input type="submit" value="change">
+<form id="update"><p>
+<select name="resolution" required>%resolution%</select>
+%hmirror%
+%vflip%
+<input type="submit" value="update">
 </p></form>
-<p id="toggles">
-<label><input type="checkbox" data-act="hmirror">hmirror</label>
-<label><input type="checkbox" data-act="vflip">vflip</label>
-</p>
 <p id="controls">
 <button data-act="mjpeg">show Motion JPEG stream</button>
 <button data-act="jpg">show still JPEG image</button>
@@ -32,35 +29,17 @@ async function fetchText(uri, init) {
 }
 
 const $display = document.querySelector("#display");
-const $resolution = document.querySelector("#resolution");
-
-$resolution.form.addEventListener("submit", async (evt) => {
+document.querySelector("#update").addEventListener("submit", async (evt) => {
   evt.preventDefault();
-  const [width, height] = $resolution.value.split("x");
   try {
-    await fetchText("/change-resolution.cgi", {
+    await fetchText("/update.cgi", {
       method: "POST",
-      body: new URLSearchParams({ width, height }),
+      body: new URLSearchParams(new FormData(evt.target)),
     });
   } catch (err) {
     $display.textContent = err.toString();
   }
 });
-
-for (const $ctrl of document.querySelectorAll("#toggles input[type=checkbox]")) {
-  $ctrl.addEventListener("change", async (evt) => {
-    evt.preventDefault();
-    const act = evt.target.getAttribute("data-act");
-    try {
-      await fetchText(`/set-${act}.cgi`, {
-        method: "POST",
-        body: new URLSearchParams({ enable: Number(evt.target.checked) }),
-      });
-    } catch (err) {
-      $display.textContent = err.toString();
-    }
-  });
-}
 
 for (const $ctrl of document.querySelectorAll("#controls button")) {
   $ctrl.addEventListener("click", (evt) => {
@@ -83,77 +62,65 @@ for (const $ctrl of document.querySelectorAll("#controls button")) {
 )EOT";
 
 static String
-rewriteFrontpage(const String& var) {
+rewriteFrontpage(const esp32cam::Settings& settings, const String& var) {
   StreamString b;
-  if (var == "RESOLUTION_OPTIONS") {
+
+  if (var == "resolution") {
     for (const auto& r : esp32cam::Camera.listResolutions()) {
-      b.print("<option");
-      if (r == currentResolution) {
-        b.print(" selected");
-      }
-      if (r > initialResolution) {
-        b.print(" disabled");
-      }
-      b.print('>');
+      b.printf("<option value=\"%d\"%s>", r.as<int>(),
+               r > initialResolution      ? " disabled"
+               : r == settings.resolution ? " selected"
+                                          : "");
       b.print(r);
       b.print("</option>");
     }
   }
+
+#define SETTING_BOOL(MEM)                                                                          \
+  else if (var == #MEM) {                                                                          \
+    b.printf("<label><input type=\"checkbox\" name=\"" #MEM "\" value=\"1\"%s>" #MEM "</label>",   \
+             settings.MEM ? " checked" : "");                                                      \
+  }
+
+  SETTING_BOOL(hmirror)
+  SETTING_BOOL(vflip)
+
+#undef SETTING_BOOL
+
   return b;
+}
+
+static void
+handleFrontpage(AsyncWebServerRequest* request) {
+  auto settings = esp32cam::Camera.status();
+  request->send(200, "text/html", reinterpret_cast<const uint8_t*>(FRONTPAGE), sizeof(FRONTPAGE),
+                [=](const String& var) { return rewriteFrontpage(settings, var); });
+}
+
+static void
+handleUpdate(AsyncWebServerRequest* request) {
+  bool ok = esp32cam::Camera.update([=](esp32cam::Settings& settings) {
+    settings.resolution =
+      esp32cam::Resolution(static_cast<int>(request->arg("resolution").toInt()));
+    settings.hmirror = request->arg("hmirror").toInt() != 0;
+    settings.vflip = request->arg("vflip").toInt() != 0;
+  });
+
+  if (!ok) {
+    request->send(500, "text/plain", "update settings error\n");
+    return;
+  }
+  request->send(204);
 }
 
 void
 addRequestHandlers() {
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-    request->send(200, "text/html", reinterpret_cast<const uint8_t*>(FRONTPAGE), sizeof(FRONTPAGE),
-                  rewriteFrontpage);
-  });
-
   server.on("/robots.txt", HTTP_GET, [](AsyncWebServerRequest* request) {
     request->send(200, "text/plain", "User-Agent: *\nDisallow: /\n");
   });
 
-  server.on("/change-resolution.cgi", HTTP_POST, [](AsyncWebServerRequest* request) {
-    long width = request->arg("width").toInt();
-    long height = request->arg("height").toInt();
-    auto r = esp32cam::Camera.listResolutions().find(width, height);
-    if (!(r.isValid() && r.getWidth() == width && r.getHeight() == height)) {
-      request->send(404, "text/plain", "non-existent resolution\n");
-      return;
-    }
-
-    if (!esp32cam::Camera.changeResolution(r, 0)) {
-      Serial.printf("changeResolution(%ld,%ld) failure\n", width, height);
-      request->send(500, "text/plain", "changeResolution error\n");
-      return;
-    }
-
-    currentResolution = r;
-    Serial.printf("changeResolution(%ld,%ld) success\n", width, height);
-    StreamString b;
-    b.print(currentResolution);
-    request->send(200, "text/plain", static_cast<String>(b));
-  });
-
-  server.on("/set-hmirror.cgi", HTTP_POST, [](AsyncWebServerRequest* request) {
-    long enable = request->arg("enable").toInt();
-    if (!esp32cam::Camera.update(esp32cam::SetHmirror(enable != 0))) {
-      request->send(500, "text/plain", "SetHmirror error\n");
-      return;
-    }
-    Serial.printf("SetHmirror(%ld) success\n", enable);
-    request->send(200, "text/plain", "SetHmirror success\n");
-  });
-
-  server.on("/set-vflip.cgi", HTTP_POST, [](AsyncWebServerRequest* request) {
-    long enable = request->arg("enable").toInt();
-    if (!esp32cam::Camera.update(esp32cam::SetVflip(enable != 0))) {
-      request->send(500, "text/plain", "SetVflip error\n");
-      return;
-    }
-    Serial.printf("SetVflip(%ld) success\n", enable);
-    request->send(200, "text/plain", "SetVflip success\n");
-  });
+  server.on("/", HTTP_GET, handleFrontpage);
+  server.on("/update.cgi", HTTP_POST, handleUpdate);
 
   server.on("/cam.jpg", esp32cam::asyncweb::handleStill);
   server.on("/cam.mjpeg", esp32cam::asyncweb::handleMjpeg);

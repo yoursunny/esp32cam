@@ -1,4 +1,6 @@
 #include "config.hpp"
+#include "camera.hpp"
+#include "logger.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -88,6 +90,55 @@ Config::setJpeg(int quality) {
   m_cfg->pixel_format = PIXFORMAT_JPEG;
   m_cfg->jpeg_quality = detail::convertJpegQuality(quality);
   return *this;
+}
+
+Settings
+CameraClass::status() const {
+  Settings result;
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return result;
+  }
+
+  result.resolution = Resolution(sensor->status.framesize);
+  result.hmirror = sensor->status.hmirror != 0;
+  result.vflip = sensor->status.vflip != 0;
+  return result;
+}
+
+bool
+CameraClass::update(const Settings& settings, int sleepFor) {
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr) {
+    return false;
+  }
+
+#define UPDATE(STATUS_MEM, SETTING_MEM, SETTER_TYP)                                                \
+  do {                                                                                             \
+    auto prev = sensor->status.STATUS_MEM;                                                         \
+    if (prev != static_cast<decltype(sensor->status.STATUS_MEM)>(settings.SETTING_MEM)) {          \
+      int res = sensor->set_##STATUS_MEM(sensor, static_cast<SETTER_TYP>(settings.SETTING_MEM));   \
+      ESP32CAM_LOG("update " #STATUS_MEM " %d => %d %s", static_cast<int>(prev),                   \
+                   static_cast<int>(settings.SETTING_MEM), res == 0 ? "success" : "failure");      \
+      if (res != 0) {                                                                              \
+        return false;                                                                              \
+      }                                                                                            \
+    }                                                                                              \
+  } while (false)
+
+#define UPDATE1(MEM) UPDATE(MEM, MEM, int)
+
+  UPDATE(framesize, resolution.as<framesize_t>(), framesize_t);
+  UPDATE1(hmirror);
+  UPDATE1(vflip);
+
+#undef UPDATE
+#undef UPDATE1
+
+  if (sleepFor > 0) {
+    delay(sleepFor);
+  }
+  return true;
 }
 
 } // namespace esp32cam

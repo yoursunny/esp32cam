@@ -5,7 +5,6 @@ static const char* WIFI_SSID = "my-ssid";
 static const char* WIFI_PASS = "my-pass";
 
 esp32cam::Resolution initialResolution;
-esp32cam::Resolution currentResolution;
 
 AsyncWebServer server(80);
 
@@ -31,7 +30,6 @@ setup() {
     using namespace esp32cam;
 
     initialResolution = Resolution::find(1024, 768);
-    currentResolution = initialResolution;
 
     Config cfg;
     cfg.setPins(pins::AiThinker);

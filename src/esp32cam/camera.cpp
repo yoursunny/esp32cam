@@ -5,6 +5,10 @@
 
 namespace esp32cam {
 
+// extern ESP32CAM_SPECIALIZE_SENSOR_SETTING(framesize_t, framesize_t);
+
+// static SensorSetting<framesize_t, framesize_t> frameSize(ESP32CAM_SENSOR_OFFSETS(framesize));
+
 Print* LogOutput = nullptr;
 CameraClass Camera;
 
@@ -52,15 +56,6 @@ CameraClass::changeResolution(const Resolution& resolution, int sleepFor) {
     delay(sleepFor);
   }
   return true;
-}
-
-bool
-CameraClass::update(const SensorSetter& setter) {
-  sensor_t* sensor = esp_camera_sensor_get();
-  if (sensor == nullptr) {
-    return false;
-  }
-  return setter(sensor);
 }
 
 std::unique_ptr<Frame>

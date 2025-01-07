@@ -3,7 +3,7 @@
 
 #include "config.hpp"
 #include "mjpeg.hpp"
-#include "setters.hpp"
+#include <functional>
 
 namespace esp32cam {
 
@@ -32,20 +32,41 @@ public:
    * @pre Camera is enabled.
    * @param resolution new resolution; must be no higher than initial resolution.
    * @param sleepFor how long to wait for stabilization (millis).
+   * @deprecated Use @c update instead.
    */
   bool changeResolution(const Resolution& resolution, int sleepFor = 500);
 
   /**
-   * @brief Update camera configuration.
-   * @param setter See `setters.hpp`.
-   * @return whether success.
-   *
-   * Example:
-   * @code
-   * bool ok = Camera.update(SetVflip(true));
-   * @endcode
+   * @brief Retrieve runtime settings.
+   * @pre Camera is enabled.
    */
-  bool update(const SensorSetter& setter);
+  Settings status() const;
+
+  /**
+   * @brief Update runtime settings.
+   * @param settings updated settings.
+   * @param sleepFor how long to wait for stabilization (millis).
+   * @pre Camera is enabled.
+   * @post Camera may be left in inconsistent state in case of failure.
+   * @return whether success.
+   */
+  bool update(const Settings& settings, int sleepFor = 0);
+
+  /**
+   * @brief Update runtime settings using modifier function.
+   * @param modifier function to modify settings.
+   * @param sleepFor how long to wait for stabilization (millis).
+   * @pre Camera is enabled.
+   * @post Camera may be left in inconsistent state in case of failure.
+   * @return whether success.
+   */
+  template<typename Fn>
+  std::enable_if_t<std::is_assignable_v<std::function<void(Settings&)>, Fn>, bool> //
+  update(const Fn& modifier, int sleepFor = 0) {
+    Settings settings = status();
+    modifier(settings);
+    return update(settings, sleepFor);
+  }
 
   /**
    * @brief Capture a frame of picture.

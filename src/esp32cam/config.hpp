@@ -52,6 +52,18 @@ private:
   friend class CameraClass;
 };
 
+/** @brief Camera runtime settings. */
+struct Settings {
+  /** @brief Picture resolution. */
+  Resolution resolution;
+
+  /** @brief Horizontal flip. */
+  bool hmirror = false;
+
+  /** @brief Vertical flip. */
+  bool vflip = false;
+};
+
 } // namespace esp32cam
 
 #endif // ESP32CAM_CONFIG_HPP

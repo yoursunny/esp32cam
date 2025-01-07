@@ -1,7 +1,7 @@
 #ifndef ESP32CAM_LOGGER_HPP
 #define ESP32CAM_LOGGER_HPP
 
-#include <Print.h>
+#include <Arduino.h>
 
 namespace esp32cam {
 
