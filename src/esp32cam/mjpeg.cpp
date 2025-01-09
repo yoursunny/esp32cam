@@ -7,7 +7,7 @@ namespace esp32cam {
 namespace detail {
 
 MjpegController::MjpegController(MjpegConfig cfg)
-  : m_cfg(cfg)
+  : cfg(cfg)
   , m_nextCaptureTime(millis()) {}
 
 int
@@ -25,7 +25,7 @@ MjpegController::decideAction() {
 void
 MjpegController::notifyCapture() {
   m_nextAction = RETURN;
-  m_nextCaptureTime = millis() + static_cast<unsigned long>(m_cfg.minInterval);
+  m_nextCaptureTime = millis() + static_cast<unsigned long>(cfg.minInterval);
   MC_LOG("notifyCapture next=%lu", m_nextCaptureTime);
 }
 
@@ -51,7 +51,7 @@ MjpegController::notifySent(bool ok) {
     return;
   }
   m_frame.reset();
-  m_nextAction = m_cfg.maxFrames < 0 || m_count < m_cfg.maxFrames ? CAPTURE : STOP;
+  m_nextAction = cfg.maxFrames < 0 || m_count < cfg.maxFrames ? CAPTURE : STOP;
 }
 
 void

@@ -7,12 +7,21 @@
 
 namespace esp32cam {
 
+/** MJPEG stream options. */
 struct MjpegConfig {
-  /** @brief minimum interval between frame captures. */
+  /**
+   * @brief Minimum interval between frame captures in millis.
+   */
   int minInterval = 0;
-  /** @brief maximum number of frames before disconnecting. */
+
+  /**
+   * @brief Maximum number of frames before disconnecting.
+   *
+   * Negative value means unlimited.
+   */
   int maxFrames = -1;
-  /** @brief time limit of writing one frame in millis. */
+
+  /** @brief Time limit of writing one frame in millis. */
   int frameTimeout = 10000;
 };
 
@@ -23,22 +32,10 @@ class MjpegController {
 public:
   explicit MjpegController(MjpegConfig cfg);
 
-  /** @brief Retrieve config object. */
-  const MjpegConfig& getConfig() const {
-    return m_cfg;
-  }
-
   /** @brief Retrieve number of sent frames. */
   int countSentFrames() const {
     return m_count;
   }
-
-  enum {
-    CAPTURE = -1,
-    RETURN = -2,
-    SEND = -3,
-    STOP = -4,
-  };
 
   /**
    * @brief Decide what to do now.
@@ -72,6 +69,9 @@ public:
    * @brief Notify that a frame is sent to the client.
    * @param ok whether sent successfully.
    * @post getFrame()==nullptr
+   *
+   * The caller is expected to enforce @c MjpegConfig::frameTimeout and call
+   * `notifySent(false)` in case of send timeout.
    */
   void notifySent(bool ok);
 
@@ -82,8 +82,17 @@ public:
    */
   void notifyFail();
 
+public:
+  enum Action {
+    CAPTURE = -1,
+    RETURN = -2,
+    SEND = -3,
+    STOP = -4,
+  };
+
+  const MjpegConfig cfg;
+
 private:
-  MjpegConfig m_cfg;
   std::unique_ptr<Frame> m_frame;
   unsigned long m_nextCaptureTime;
   int m_nextAction = CAPTURE;
@@ -105,7 +114,7 @@ public:
 
 public:
   size_t size = 0;
-  char buf[160];
+  char buf[120];
 };
 
 } // namespace detail

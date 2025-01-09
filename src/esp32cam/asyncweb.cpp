@@ -118,7 +118,7 @@ StillResponse::_fillBuffer(uint8_t* buf, size_t buflen) {
 }
 
 MjpegResponse::MjpegResponse(const MjpegConfig& cfg)
-  : m_task(4)
+  : m_task(2)
   , m_ctrl(cfg) {
   MJPEG_LOG("created");
   if (!m_task) {
@@ -147,6 +147,7 @@ MjpegResponse::_fillBuffer(uint8_t* buf, size_t buflen) {
       if (auto frame = m_task.retrieve(); frame) {
         m_ctrl.notifyReturn(std::move(frame));
       }
+      m_sendSince = millis();
       m_sendNext = SIPartHeader;
       m_sendRemain = 0;
 
@@ -160,6 +161,9 @@ MjpegResponse::_fillBuffer(uint8_t* buf, size_t buflen) {
       if (len == 0 && m_sendNext == SINone) {
         m_ctrl.notifySent(true);
       } else {
+        if (static_cast<int>(millis() - m_sendSince) > m_ctrl.cfg.frameTimeout) {
+          m_ctrl.notifySent(false);
+        }
         return len;
       }
 
@@ -190,11 +194,13 @@ MjpegResponse::sendPart(uint8_t* buf, size_t buflen) {
         m_sendRemain = m_hdr.size;
         m_sendNext = SIFrame;
         break;
-      case SIFrame:
-        m_sendBuf = m_ctrl.getFrame()->data();
-        m_sendRemain = m_ctrl.getFrame()->size();
+      case SIFrame: {
+        Frame* frame = m_ctrl.getFrame();
+        m_sendBuf = frame->data();
+        m_sendRemain = frame->size();
         m_sendNext = SIPartTrailer;
         break;
+      }
       case SIPartTrailer:
         m_hdr.preparePartTrailer();
         m_sendBuf = reinterpret_cast<const uint8_t*>(m_hdr.buf);

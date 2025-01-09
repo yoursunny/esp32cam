@@ -113,6 +113,7 @@ private:
   const uint8_t* m_sendBuf = nullptr;
   size_t m_sendRemain = 0;
   unsigned long m_createTime = millis();
+  unsigned long m_sendSince = 0;
 };
 
 /** @brief Handle HTTP request for MJPEG stream. */
