@@ -10,7 +10,7 @@ namespace detail {
 
 class CaptureTask {
 public:
-  explicit CaptureTask(uint32_t queueLength, uint32_t priority = 1, int core = 1);
+  explicit CaptureTask(uint32_t queueLength, uint32_t priority = 1);
 
   ~CaptureTask();
 
@@ -18,7 +18,7 @@ public:
     return m_queue != nullptr && m_task != nullptr;
   }
 
-  void request();
+  void request(bool continuous = false);
 
   std::unique_ptr<Frame> retrieve();
 
@@ -28,6 +28,7 @@ private:
 private:
   void* m_queue = nullptr;
   void* m_task = nullptr;
+  bool m_continuous = false;
 };
 
 } // namespace detail
@@ -81,6 +82,12 @@ handleStill(AsyncWebServerRequest* request) {
  * different images.
  * If task creation fails, respond with HTTP 500 error.
  * If image capture fails, the stream is stopped.
+ *
+ * Normally, a new frame is captured after the prior frame has been fully sent to the client.
+ * Setting MjpegConfig::minInternal to -1 enables continuous mode, in which a new frame is
+ * captured while the prior frame is still being sent to the client. This improves FPS rate
+ * but also increases video latency. This mode is effective only if there are more than one
+ * frame buffer created during camera initialization.
  */
 class MjpegResponse : public AsyncAbstractResponse {
 public:

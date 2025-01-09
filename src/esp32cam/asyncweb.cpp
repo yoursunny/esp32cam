@@ -11,7 +11,7 @@
 namespace esp32cam {
 namespace detail {
 
-CaptureTask::CaptureTask(uint32_t queueLength, uint32_t priority, int core) {
+CaptureTask::CaptureTask(uint32_t queueLength, uint32_t priority) {
   m_queue = xQueueCreate(queueLength, sizeof(Frame*));
   if (m_queue == nullptr) {
     return;
@@ -41,10 +41,11 @@ CaptureTask::~CaptureTask() {
 }
 
 void
-CaptureTask::request() {
-  if (m_task == nullptr) {
+CaptureTask::request(bool continuous) {
+  if (m_task == nullptr || m_continuous) {
     return;
   }
+  m_continuous = continuous;
   xTaskNotify(reinterpret_cast<TaskHandle_t>(m_task), 1, eSetValueWithOverwrite);
 }
 
@@ -62,10 +63,12 @@ void
 CaptureTask::run(void* ctx) {
   auto self = reinterpret_cast<CaptureTask*>(ctx);
   while (true) {
-    uint32_t value = 0;
-    xTaskNotifyWait(0, UINT32_MAX, &value, pdMS_TO_TICKS(10000));
-    if (value == 0) {
-      continue;
+    if (!self->m_continuous) {
+      uint32_t value = 0;
+      xTaskNotifyWait(0, UINT32_MAX, &value, pdMS_TO_TICKS(10000));
+      if (value == 0) {
+        continue;
+      }
     }
 
     auto frame = Camera.capture().release();
@@ -173,7 +176,7 @@ MjpegResponse::_fillBuffer(uint8_t* buf, size_t buflen) {
       // fallthrough
     }
     case Ctrl::CAPTURE: {
-      m_task.request();
+      m_task.request(m_ctrl.cfg.minInterval < 0);
       m_ctrl.notifyCapture();
       return RESPONSE_TRY_AGAIN;
     }

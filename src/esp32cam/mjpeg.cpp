@@ -25,7 +25,7 @@ MjpegController::decideAction() {
 void
 MjpegController::notifyCapture() {
   m_nextAction = RETURN;
-  m_nextCaptureTime = millis() + static_cast<unsigned long>(cfg.minInterval);
+  m_nextCaptureTime = millis() + static_cast<unsigned long>(std::max(0, cfg.minInterval));
   MC_LOG("notifyCapture next=%lu", m_nextCaptureTime);
 }
 

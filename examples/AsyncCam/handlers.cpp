@@ -18,9 +18,10 @@ static const char FRONTPAGE[] = R"EOT(
 <input type="submit" value="update">
 </p></form>
 <p id="controls">
-<button data-act="mjpeg">show Motion JPEG stream</button>
-<button data-act="jpg">show still JPEG image</button>
-<button data-act="">hide</button>
+<button data-res="cam.jpg">still JPEG</button>
+<button data-res="cam.mjpeg">MJPEG</button>
+<button data-res="continuous.mjpeg">MJPEG-continuous</button>
+<button data-res="">hide</button>
 </p>
 <div id="display"></div>
 <footer>Powered by <a href="https://esp32cam.yoursunny.dev/">esp32cam</a></footer>
@@ -57,12 +58,8 @@ for (const $ctrl of document.querySelectorAll("#controls button")) {
       $img.src = "";
     }
 
-    const act = evt.target.getAttribute("data-act");
-    if (act === "") {
-      $display.innerHTML = "";
-    } else {
-      $display.innerHTML = `<img src="/cam.${act}?_=${Math.random()}" alt="camera image">`;
-    }
+    const resource = evt.target.getAttribute("data-res");
+    $display.innerHTML = resource && `<img src="/${resource}?_=${Math.random()}" alt="${resource}">`;
   });
 }
 </script>
@@ -172,4 +169,9 @@ addRequestHandlers() {
 
   server.on("/cam.jpg", esp32cam::asyncweb::handleStill);
   server.on("/cam.mjpeg", esp32cam::asyncweb::handleMjpeg);
+  server.on("/continuous.mjpeg", HTTP_GET, [](AsyncWebServerRequest* req) {
+    esp32cam::MjpegConfig cfg;
+    cfg.minInterval = -1;
+    req->send(new esp32cam::asyncweb::MjpegResponse(cfg));
+  });
 }

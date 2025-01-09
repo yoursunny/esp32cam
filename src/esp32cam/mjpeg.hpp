@@ -11,6 +11,8 @@ namespace esp32cam {
 struct MjpegConfig {
   /**
    * @brief Minimum interval between frame captures in millis.
+   *
+   * Negative value causes @c asyncweb::MjpegResponse to enter continuous mode.
    */
   int minInterval = 0;
 

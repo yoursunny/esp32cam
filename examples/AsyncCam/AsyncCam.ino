@@ -34,6 +34,7 @@ setup() {
     Config cfg;
     cfg.setPins(pins::AiThinker);
     cfg.setResolution(initialResolution);
+    cfg.setBufferCount(3);
     cfg.setJpeg(80);
 
     bool ok = Camera.begin(cfg);
