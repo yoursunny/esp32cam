@@ -54,6 +54,7 @@ private:
 
 /** @brief Light mode / white balance values. */
 enum class LightMode {
+  NONE = -1,
   AUTO = 0,
   SUNNY = 1,
   CLOUDY = 2,

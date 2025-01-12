@@ -83,6 +83,7 @@ rewriteFrontpage(const esp32cam::Settings& s, const String& var) {
   b.printf("<option value=\"%d\" title=\"%s\"%s>%s</option>",                                      \
            static_cast<int>(esp32cam::LightMode::MODE), #MODE,                                     \
            s.lightMode == esp32cam::LightMode::MODE ? " selected" : "", SYMBOL)
+    SHOW_LM(NONE, "&#x1F6AB;");
     SHOW_LM(AUTO, "&#x2B55;");
     SHOW_LM(SUNNY, "&#x2600;&#xFE0F;");
     SHOW_LM(CLOUDY, "&#x2601;&#xFE0F;");
