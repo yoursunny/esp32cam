@@ -87,6 +87,14 @@ struct Settings {
   /** @brief Image saturation, between -2 and +2. */
   int8_t saturation;
 
+  /**
+   * @brief Gain control, with or without Automatic Gain Control (AGC).
+   *
+   * - AGC disabled: a positive number between 1 and 31, which corresponds to 1x ~ 31x gain.
+   * - AGC enabled: -2,-4,-8,-16,-32,-64,-128, which corresponds to 2x ~ 128x gain.
+   */
+  int8_t gain;
+
   /** @brief Image light mode. */
   LightMode lightMode;
 

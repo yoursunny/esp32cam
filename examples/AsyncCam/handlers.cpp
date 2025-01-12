@@ -11,6 +11,7 @@ static const char FRONTPAGE[] = R"EOT(
 %brightness%
 %contrast%
 %saturation%
+<select name="gain" title="gain">%gain%</select>
 <select name="lightMode" title="light mode">%lightMode%</select>
 <select name="specialEffect" title="special effect">%specialEffect%</select>
 %hmirror%
@@ -78,11 +79,25 @@ rewriteFrontpage(const esp32cam::Settings& s, const String& var) {
       b.print(r);
       b.print("</option>");
     }
+  } else if (var == "gain") {
+#define SHOW_GAIN(val, dsp)                                                                        \
+  b.printf("<option value=\"%d\"%s>%dx</option>", val, s.gain == val ? " selected" : "", dsp)
+    b.printf("<optgroup label=\"AGC=off\">");
+    for (int i = 1; i <= 31; ++i) {
+      SHOW_GAIN(i, i);
+    }
+    b.printf("</optgroup>");
+    b.printf("<optgroup label=\"AGC=on\">");
+    for (int i = 2; i <= 128; i <<= 1) {
+      SHOW_GAIN(-i, i);
+    }
+    b.printf("</optgroup>");
+#undef SHOW_GAIN
   } else if (var == "lightMode") {
-#define SHOW_LM(MODE, SYMBOL)                                                                      \
+#define SHOW_LM(MODE, symbol)                                                                      \
   b.printf("<option value=\"%d\" title=\"%s\"%s>%s</option>",                                      \
            static_cast<int>(esp32cam::LightMode::MODE), #MODE,                                     \
-           s.lightMode == esp32cam::LightMode::MODE ? " selected" : "", SYMBOL)
+           s.lightMode == esp32cam::LightMode::MODE ? " selected" : "", symbol)
     SHOW_LM(NONE, "&#x1F6AB;");
     SHOW_LM(AUTO, "&#x2B55;");
     SHOW_LM(SUNNY, "&#x2600;&#xFE0F;");
@@ -91,10 +106,10 @@ rewriteFrontpage(const esp32cam::Settings& s, const String& var) {
     SHOW_LM(HOME, "&#x1F3E0;");
 #undef SHOW_LM
   } else if (var == "specialEffect") {
-#define SHOW_SE(MODE, SYMBOL)                                                                      \
+#define SHOW_SE(MODE, symbol)                                                                      \
   b.printf("<option value=\"%d\" title=\"%s\"%s>%s</option>",                                      \
            static_cast<int>(esp32cam::SpecialEffect::MODE), #MODE,                                 \
-           s.specialEffect == esp32cam::SpecialEffect::MODE ? " selected" : "", SYMBOL)
+           s.specialEffect == esp32cam::SpecialEffect::MODE ? " selected" : "", symbol)
     SHOW_SE(NONE, "&#x1F6AB;");
     SHOW_SE(NEGATIVE, "&#x2B1C;");
     SHOW_SE(BLACKWHITE, "&#x2B1B;");
@@ -144,6 +159,7 @@ handleUpdate(AsyncWebServerRequest* req) {
     SAVE_INT(brightness);
     SAVE_INT(contrast);
     SAVE_INT(saturation);
+    SAVE_INT(gain);
     SAVE_INT(lightMode);
     SAVE_INT(specialEffect);
     SAVE_BOOL(hmirror);
