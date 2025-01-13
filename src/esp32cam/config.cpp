@@ -107,13 +107,11 @@ CameraClass::status() const {
   result.saturation = ss.saturation;
   result.lightMode = ss.awb_gain ? static_cast<LightMode>(ss.wb_mode) : LightMode::NONE;
   result.specialEffect = static_cast<SpecialEffect>(ss.special_effect);
-  if (ss.agc) {
-    result.gain = (-2) << ss.gainceiling;
-  } else {
-    result.gain = 1 + static_cast<int8_t>(ss.agc_gain);
-  }
+  result.gain = ss.agc ? ((-2) << ss.gainceiling) : (1 + static_cast<int8_t>(ss.agc_gain));
   result.hmirror = ss.hmirror != 0;
   result.vflip = ss.vflip != 0;
+  result.rawGma = ss.raw_gma != 0;
+  result.lensCorrection = ss.lenc != 0;
   return result;
 }
 
@@ -165,6 +163,8 @@ CameraClass::update(const Settings& settings, int sleepFor) {
   UPDATE2(special_effect, settings.specialEffect);
   UPDATE1(hmirror);
   UPDATE1(vflip);
+  UPDATE2(raw_gma, settings.rawGma);
+  UPDATE2(lenc, settings.lensCorrection);
 
   if (settings.gain > 0) {
     UPDATE4(agc, 0, set_gain_ctrl, int);

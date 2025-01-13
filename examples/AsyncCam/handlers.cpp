@@ -16,6 +16,8 @@ static const char FRONTPAGE[] = R"EOT(
 <select name="specialEffect" title="special effect">%specialEffect%</select>
 %hmirror%
 %vflip%
+%rawGma%
+%lensCorrection%
 <input type="submit" value="update">
 </p></form>
 <p id="controls">
@@ -82,12 +84,12 @@ rewriteFrontpage(const esp32cam::Settings& s, const String& var) {
   } else if (var == "gain") {
 #define SHOW_GAIN(val, dsp)                                                                        \
   b.printf("<option value=\"%d\"%s>%dx</option>", val, s.gain == val ? " selected" : "", dsp)
-    b.printf("<optgroup label=\"AGC=off\">");
+    b.printf("<optgroup label=\"AGC=0\">");
     for (int i = 1; i <= 31; ++i) {
       SHOW_GAIN(i, i);
     }
     b.printf("</optgroup>");
-    b.printf("<optgroup label=\"AGC=on\">");
+    b.printf("<optgroup label=\"AGC=1\">");
     for (int i = 2; i <= 128; i <<= 1) {
       SHOW_GAIN(-i, i);
     }
@@ -138,6 +140,8 @@ rewriteFrontpage(const esp32cam::Settings& s, const String& var) {
   SHOW_INT(saturation, -2, 2)
   SHOW_BOOL(hmirror)
   SHOW_BOOL(vflip)
+  SHOW_BOOL(rawGma)
+  SHOW_BOOL(lensCorrection)
 #undef SHOW_INT
 #undef SHOW_BOOL
   return b;
@@ -164,6 +168,8 @@ handleUpdate(AsyncWebServerRequest* req) {
     SAVE_INT(specialEffect);
     SAVE_BOOL(hmirror);
     SAVE_BOOL(vflip);
+    SAVE_BOOL(rawGma);
+    SAVE_BOOL(lensCorrection);
 #undef SAVE_BOOL
 #undef SAVE_INT
   });

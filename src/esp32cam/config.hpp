@@ -106,6 +106,12 @@ struct Settings {
 
   /** @brief Vertical flip. */
   bool vflip = false;
+
+  /** @brief Raw gamma mode. */
+  bool rawGma = false;
+
+  /** @brief Lens correction mode. */
+  bool lensCorrection = false;
 };
 
 } // namespace esp32cam
