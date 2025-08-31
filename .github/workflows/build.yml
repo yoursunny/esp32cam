@@ -6,12 +6,12 @@ on:
 permissions: {}
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Install dependencies
         run: |
           sudo apt-get install -y --no-install-recommends clang-format-15 doxygen
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check code style
         run: |
           mk/format-code.sh
@@ -23,8 +23,8 @@ jobs:
             - source-path: ./
             - name: Async TCP
             - name: ESP Async WebServer
-          # https://github.com/mathieucarbou/AsyncTCP
-          # https://github.com/mathieucarbou/ESPAsyncWebServer
+          # https://github.com/ESP32Async/AsyncTCP
+          # https://github.com/ESP32Async/ESPAsyncWebServer
       - name: Build docs
         run: docs/build.sh
       - name: Deploy docs

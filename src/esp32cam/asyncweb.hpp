@@ -35,7 +35,7 @@ private:
 
 /**
  * @brief esp32cam integration with ESPAsyncWebServer library.
- * @sa https://github.com/mathieucarbou/ESPAsyncWebServer
+ * @sa https://github.com/ESP32Async/ESPAsyncWebServer
  */
 namespace asyncweb {
 
