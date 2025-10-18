@@ -1,8 +1,8 @@
 #include "frame.hpp"
 #include "config.hpp"
-
 #include <Arduino.h>
 #include <esp_camera.h>
+#include <memory>
 
 namespace esp32cam {
 
@@ -66,15 +66,30 @@ Frame::isJpeg() const {
 
 bool
 Frame::toJpeg(int quality) {
-  uint8_t* data;
-  size_t size;
-  bool ok = fmt2jpg(m_data, m_size, m_width, m_height, static_cast<pixformat_t>(m_pixFormat),
-                    detail::convertJpegQuality(quality), &data, &size);
-  if (!ok) {
+  const uint8_t* input = m_data;
+  size_t size = m_size;
+  pixformat_t fmt = static_cast<pixformat_t>(m_pixFormat);
+  std::unique_ptr<uint8_t[]> rgb;
+
+  if (isJpeg()) {
+    size = m_width * m_height * 3;
+    rgb.reset(new uint8_t[size]);
+    if (fmt2rgb888(input, size, fmt, rgb.get())) {
+      input = rgb.get();
+      fmt = PIXFORMAT_RGB888;
+    } else {
+      return false;
+    }
+  }
+
+  uint8_t* output;
+  if (!fmt2jpg(const_cast<uint8_t*>(input), size, m_width, m_height, fmt,
+               detail::convertJpegQuality(quality), &output, &size)) {
     return false;
   }
+
   releaseFb();
-  m_data = data;
+  m_data = output;
   m_size = size;
   m_pixFormat = PIXFORMAT_JPEG;
   return true;
