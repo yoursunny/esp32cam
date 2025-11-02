@@ -65,6 +65,29 @@ constexpr Pins XiaoSense{
   PWDN: -1,
 };
 
+/**
+ * @brief Pin definition for ESP32-S3-CAM with ESP32-S3-N16R8 chip.
+ * @see https://community.home-assistant.io/t/esp32-s3-cam-dev-board-on-aliexpress/731795/17
+ */
+constexpr Pins S3N16R8{
+  D0: 11,
+  D1: 9,
+  D2: 8,
+  D3: 10,
+  D4: 12,
+  D5: 18,
+  D6: 17,
+  D7: 16,
+  XCLK: 15,
+  PCLK: 13,
+  VSYNC: 6,
+  HREF: 7,
+  SDA: 4,
+  SCL: 5,
+  RESET: -1,
+  PWDN: -1,
+};
+
 /** @brief Pin definition for FREENOVE WROVER ESP32-CAM. */
 constexpr Pins FreeNove{
   D0: 4,
