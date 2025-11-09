@@ -104,6 +104,8 @@ public:
 private:
   size_t sendPart(uint8_t* buf, size_t buflen);
 
+  bool isInitialBoundarySent = false;
+
 private:
   detail::CaptureTask m_task;
   using Ctrl = detail::MjpegController;

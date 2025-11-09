@@ -192,7 +192,8 @@ MjpegResponse::sendPart(uint8_t* buf, size_t buflen) {
   if (m_sendRemain == 0) {
     switch (m_sendNext) {
       case SIPartHeader:
-        m_hdr.preparePartHeader(m_ctrl.getFrame()->size());
+        m_hdr.preparePartHeader(m_ctrl.getFrame()->size(), !isInitialBoundarySent);
+        isInitialBoundarySent = true;
         m_sendBuf = reinterpret_cast<const uint8_t*>(m_hdr.buf);
         m_sendRemain = m_hdr.size;
         m_sendNext = SIFrame;

@@ -108,7 +108,7 @@ public:
 
   void prepareResponseContentType();
 
-  void preparePartHeader(size_t contentLength);
+  void preparePartHeader(size_t contentLength, bool includeInitialBoundary = false);
 
   void preparePartTrailer();
 
