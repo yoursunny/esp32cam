@@ -83,14 +83,15 @@ CameraClass::streamMjpeg(Client& client, const MjpegConfig& cfg) {
         break;
       }
       case Ctrl::SEND: {
-        hdr.preparePartHeader(ctrl.getFrame()->size());
+        hdr.prepareBoundary(ctrl.getFrame()->size());
         hdr.writeTo(client);
         ctrl.notifySent(ctrl.getFrame()->writeTo(client, cfg.frameTimeout));
-        hdr.preparePartTrailer();
         hdr.writeTo(client);
         break;
       }
       case Ctrl::STOP: {
+        hdr.prepareTrailer();
+        hdr.writeTo(client);
         client.stop();
         return ctrl.countSentFrames();
       }

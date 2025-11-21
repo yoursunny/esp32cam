@@ -112,9 +112,8 @@ private:
 
   enum SendItem {
     SINone,
-    SIPartHeader,
+    SIBoundary,
     SIFrame,
-    SIPartTrailer,
   };
   SendItem m_sendNext = SINone;
   const uint8_t* m_sendBuf = nullptr;

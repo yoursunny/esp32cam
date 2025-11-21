@@ -151,7 +151,7 @@ MjpegResponse::_fillBuffer(uint8_t* buf, size_t buflen) {
         m_ctrl.notifyReturn(std::move(frame));
       }
       m_sendSince = millis();
-      m_sendNext = SIPartHeader;
+      m_sendNext = SIBoundary;
       m_sendRemain = 0;
 
       if (m_ctrl.decideAction() != Ctrl::SEND) {
@@ -191,8 +191,8 @@ size_t
 MjpegResponse::sendPart(uint8_t* buf, size_t buflen) {
   if (m_sendRemain == 0) {
     switch (m_sendNext) {
-      case SIPartHeader:
-        m_hdr.preparePartHeader(m_ctrl.getFrame()->size());
+      case SIBoundary:
+        m_hdr.prepareBoundary(m_ctrl.getFrame()->size());
         m_sendBuf = reinterpret_cast<const uint8_t*>(m_hdr.buf);
         m_sendRemain = m_hdr.size;
         m_sendNext = SIFrame;
@@ -201,15 +201,9 @@ MjpegResponse::sendPart(uint8_t* buf, size_t buflen) {
         Frame* frame = m_ctrl.getFrame();
         m_sendBuf = frame->data();
         m_sendRemain = frame->size();
-        m_sendNext = SIPartTrailer;
-        break;
-      }
-      case SIPartTrailer:
-        m_hdr.preparePartTrailer();
-        m_sendBuf = reinterpret_cast<const uint8_t*>(m_hdr.buf);
-        m_sendRemain = m_hdr.size;
         m_sendNext = SINone;
         break;
+      }
       case SINone:
         return 0;
     }

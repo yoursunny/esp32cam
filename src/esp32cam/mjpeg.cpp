@@ -77,8 +77,9 @@ MjpegHeader::prepareResponseContentType() {
 }
 
 void
-MjpegHeader::preparePartHeader(size_t contentLength) {
+MjpegHeader::prepareBoundary(size_t contentLength) {
   size = snprintf(buf, sizeof(buf),
+                  "\r\n--" BOUNDARY "\r\n"
                   "Content-Type: image/jpeg\r\n"
                   "Content-Length: %zu\r\n"
                   "\r\n",
@@ -86,7 +87,7 @@ MjpegHeader::preparePartHeader(size_t contentLength) {
 }
 
 void
-MjpegHeader::preparePartTrailer() {
+MjpegHeader::prepareTrailer() {
   size = snprintf(buf, sizeof(buf), "\r\n--" BOUNDARY "\r\n");
 }
 
