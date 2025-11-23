@@ -78,9 +78,10 @@ serveMjpeg() {
 void
 addRequestHandlers() {
   server.on("/", HTTP_GET, [] {
-    server.setContentLength(sizeof(FRONTPAGE));
+    static const size_t contentLength = strlen(FRONTPAGE);
+    server.setContentLength(contentLength);
     server.send(200, "text/html");
-    server.sendContent(FRONTPAGE, sizeof(FRONTPAGE));
+    server.sendContent(FRONTPAGE, contentLength);
   });
 
   server.on("/robots.txt", HTTP_GET,

@@ -149,8 +149,9 @@ rewriteFrontpage(const esp32cam::Settings& s, const String& var) {
 
 static void
 handleFrontpage(AsyncWebServerRequest* req) {
+  static const size_t contentLength = strlen(FRONTPAGE);
   auto settings = esp32cam::Camera.status();
-  req->send(200, "text/html", reinterpret_cast<const uint8_t*>(FRONTPAGE), sizeof(FRONTPAGE),
+  req->send(200, "text/html", reinterpret_cast<const uint8_t*>(FRONTPAGE), contentLength,
             [=](const String& var) { return rewriteFrontpage(settings, var); });
 }
 
