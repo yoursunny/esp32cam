@@ -8,9 +8,22 @@
 namespace esp32cam {
 namespace detail {
 
+/**
+ * @brief FreeRTOS task for capturing image(s) from camera.
+ *
+ * If `continuous` is false, the task receives a request via FreeRTOS notification value.
+ * Upon receiving the request, the task captures one image.
+ * The image `Frame*` is sent to the main task via a FreeRTOS queue.
+ *
+ * If `continuous` is true, the task continuously captures images.
+ * It would then wait until the image is accepted by the queue.
+ *
+ * The task is started in the same CPU core as calling code.
+ * When the calling code is done with the `Frame*`, it can directly delete it.
+ */
 class CaptureTask {
 public:
-  explicit CaptureTask(uint32_t queueLength, uint32_t priority = 1);
+  explicit CaptureTask(uint32_t queueLength, uint32_t priority = 1, bool continuous = false);
 
   ~CaptureTask();
 
@@ -18,17 +31,19 @@ public:
     return m_queue != nullptr && m_task != nullptr;
   }
 
-  void request(bool continuous = false);
+  void request();
 
   std::unique_ptr<Frame> retrieve();
 
 private:
-  static void run(void* ctx);
+  static void run0(void* ctx);
+
+  void run();
 
 private:
   void* m_queue = nullptr;
   void* m_task = nullptr;
-  bool m_continuous = false;
+  bool m_continuous;
 };
 
 } // namespace detail

@@ -5,23 +5,30 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/idf_additions.h>
 
+#define CAPTURE_LOG(fmt, ...) ESP32CAM_LOG("CaptureTask(%p) " fmt, this, ##__VA_ARGS__)
 #define STILL_LOG(fmt, ...) ESP32CAM_LOG("StillResponse(%p) " fmt, this, ##__VA_ARGS__)
 #define MJPEG_LOG(fmt, ...) ESP32CAM_LOG("MjpegResponse(%p) " fmt, this, ##__VA_ARGS__)
 
 namespace esp32cam {
 namespace detail {
 
-CaptureTask::CaptureTask(uint32_t queueLength, uint32_t priority) {
+CaptureTask::CaptureTask(uint32_t queueLength, uint32_t priority, bool continuous)
+  : m_continuous(continuous) {
   m_queue = xQueueCreate(queueLength, sizeof(Frame*));
   if (m_queue == nullptr) {
+    CAPTURE_LOG("queue create fail");
     return;
   }
 
   TaskHandle_t task = nullptr;
-  if (xTaskCreatePinnedToCore(run, "esp32cam-capture", 2048, this, priority, &task,
-                              xPortGetCoreID()) == pdPASS) {
-    m_task = task;
-  };
+  if (xTaskCreatePinnedToCore(run0, "esp32cam-capture", 2048, this, priority, &task,
+                              xPortGetCoreID()) != pdPASS) {
+    CAPTURE_LOG("task create fail");
+    return;
+  }
+
+  m_task = task;
+  CAPTURE_LOG("created");
 }
 
 CaptureTask::~CaptureTask() {
@@ -33,20 +40,25 @@ CaptureTask::~CaptureTask() {
   if (m_queue != nullptr) {
     Frame* frame = nullptr;
     while (xQueueReceive(reinterpret_cast<QueueHandle_t>(m_queue), &frame, 0) == pdTRUE) {
-      delete frame;
+      if (frame != nullptr) {
+        CAPTURE_LOG("dequeued and deleted frame=%p", frame->data());
+        delete frame;
+      }
     }
     vQueueDelete(reinterpret_cast<QueueHandle_t>(m_queue));
     m_queue = nullptr;
   }
+
+  CAPTURE_LOG("deleted");
 }
 
 void
-CaptureTask::request(bool continuous) {
+CaptureTask::request() {
   if (m_task == nullptr || m_continuous) {
     return;
   }
-  m_continuous = continuous;
-  xTaskNotify(reinterpret_cast<TaskHandle_t>(m_task), 1, eSetValueWithOverwrite);
+  auto res = xTaskNotify(reinterpret_cast<TaskHandle_t>(m_task), 1, eSetValueWithoutOverwrite);
+  CAPTURE_LOG("requested res=%d", static_cast<int>(res));
 }
 
 std::unique_ptr<Frame>
@@ -56,14 +68,21 @@ CaptureTask::retrieve() {
       xQueueReceive(reinterpret_cast<QueueHandle_t>(m_queue), &frame, 0) != pdTRUE) {
     return nullptr;
   }
+  CAPTURE_LOG("dequeued frame=%p", frame == nullptr ? nullptr : frame->data());
   return std::unique_ptr<Frame>(frame);
 }
 
 void
-CaptureTask::run(void* ctx) {
+CaptureTask::run0(void* ctx) {
   auto self = reinterpret_cast<CaptureTask*>(ctx);
+  self->run();
+}
+
+void
+CaptureTask::run() {
+  auto queue = reinterpret_cast<QueueHandle_t>(m_queue);
   while (true) {
-    if (!self->m_continuous) {
+    if (!m_continuous) {
       uint32_t value = 0;
       xTaskNotifyWait(0, UINT32_MAX, &value, pdMS_TO_TICKS(10000));
       if (value == 0) {
@@ -72,10 +91,11 @@ CaptureTask::run(void* ctx) {
     }
 
     auto frame = Camera.capture().release();
-    while (xQueueSend(reinterpret_cast<QueueHandle_t>(self->m_queue), &frame,
-                      pdMS_TO_TICKS(10000)) != pdTRUE) {
-      ;
+    CAPTURE_LOG("captured frame=%p", frame == nullptr ? nullptr : frame->data());
+    while (xQueueSend(queue, &frame, pdMS_TO_TICKS(10000)) != pdTRUE) {
+      CAPTURE_LOG("enqueue fail room=%d", static_cast<int>(uxQueueSpacesAvailable(queue)));
     }
+    CAPTURE_LOG("enqueued frame=%p", frame == nullptr ? nullptr : frame->data());
   }
 }
 
@@ -121,7 +141,7 @@ StillResponse::_fillBuffer(uint8_t* buf, size_t buflen) {
 }
 
 MjpegResponse::MjpegResponse(const MjpegConfig& cfg)
-  : m_task(2)
+  : m_task(2, 1, cfg.minInterval < 0)
   , m_ctrl(cfg) {
   MJPEG_LOG("created");
   if (!m_task) {
@@ -176,7 +196,7 @@ MjpegResponse::_fillBuffer(uint8_t* buf, size_t buflen) {
       // fallthrough
     }
     case Ctrl::CAPTURE: {
-      m_task.request(m_ctrl.cfg.minInterval < 0);
+      m_task.request();
       m_ctrl.notifyCapture();
       return RESPONSE_TRY_AGAIN;
     }
