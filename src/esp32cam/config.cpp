@@ -112,6 +112,7 @@ CameraClass::status() const {
   result.vflip = ss.vflip != 0;
   result.rawGma = ss.raw_gma != 0;
   result.lensCorrection = ss.lenc != 0;
+  result.xclk = sensor->xclk_freq_hz / 1000000U;
   return result;
 }
 
@@ -155,6 +156,7 @@ CameraClass::update(const Settings& settings, int sleepFor) {
   CHECK_RANGE(lightMode, -1, 4);
   CHECK_RANGE(specialEffect, 0, 6);
   CHECK_RANGE(gain, -128, 31);
+  CHECK_RANGE(xclk, 6, 24);
 
   UPDATE3(framesize, settings.resolution.as<framesize_t>(), framesize_t);
   UPDATE1(brightness);
@@ -182,6 +184,16 @@ CameraClass::update(const Settings& settings, int sleepFor) {
   } else {
     UPDATE2(awb_gain, 1);
     UPDATE2(wb_mode, settings.lightMode);
+  }
+
+  int prev = sensor->xclk_freq_hz / 1000000U, desired = settings.xclk;
+  if (prev != desired) {
+    int res = sensor->set_xclk(sensor, LEDC_TIMER_0, desired);
+    ESP32CAM_LOG("update xclk %d => %d %s", prev, desired,
+                 res == 0 ? "success" : "failure");
+    if (res != 0) {
+      return false;
+    }
   }
 
 #undef CHECK_RANGE
