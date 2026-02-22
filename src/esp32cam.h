@@ -1,7 +1,7 @@
 /**
- * @mainpage esp32cam
+ * @mainpage esp32cam API Documentation
  *
- * https://github.com/yoursunny/esp32cam
+ * <a href="https://github.com/yoursunny/esp32cam" rel="nofollow">https://github.com/yoursunny/esp32cam</a>
  */
 
 #ifndef ESP32CAM_H
