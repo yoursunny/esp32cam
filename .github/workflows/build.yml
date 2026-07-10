@@ -10,8 +10,8 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          sudo apt-get install -y --no-install-recommends clang-format-15 doxygen
-      - uses: actions/checkout@v5
+          sudo apt-get install -y --no-install-recommends clang-format-19 doxygen
+      - uses: actions/checkout@v7
       - name: Check code style
         run: |
           mk/format-code.sh
@@ -28,7 +28,7 @@ jobs:
       - name: Build docs
         run: docs/build.sh
       - name: Deploy docs
-        uses: nwtgck/actions-netlify@v3
+        uses: nwtgck/actions-netlify@v4
         with:
           publish-dir: ./docs/html/
           production-deploy: true
