@@ -92,7 +92,7 @@ addRequestHandlers() {
     for (const auto& r : esp32cam::Camera.listResolutions()) {
       b.println(r);
     }
-    server.send(200, "text/csv", b);
+    server.send(200, "text/csv", static_cast<const String&>(b));
   });
 
   server.on(UriBraces("/{}x{}.{}"), HTTP_GET, [] {
