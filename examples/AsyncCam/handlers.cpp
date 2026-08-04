@@ -18,6 +18,7 @@ static const char FRONTPAGE[] = R"EOT(
 %vflip%
 %rawGma%
 %lensCorrection%
+%xclk%
 <input type="submit" value="update">
 </p></form>
 <p id="controls">
@@ -138,6 +139,7 @@ rewriteFrontpage(const esp32cam::Settings& s, const String& var) {
   SHOW_INT(brightness, -2, 2)
   SHOW_INT(contrast, -2, 2)
   SHOW_INT(saturation, -2, 2)
+  SHOW_INT(xclk, 6, 24)
   SHOW_BOOL(hmirror)
   SHOW_BOOL(vflip)
   SHOW_BOOL(rawGma)
@@ -167,6 +169,7 @@ handleUpdate(AsyncWebServerRequest* req) {
     SAVE_INT(gain);
     SAVE_INT(lightMode);
     SAVE_INT(specialEffect);
+	SAVE_INT(xclk);
     SAVE_BOOL(hmirror);
     SAVE_BOOL(vflip);
     SAVE_BOOL(rawGma);

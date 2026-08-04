@@ -94,6 +94,9 @@ struct Settings {
    * - AGC enabled: -2,-4,-8,-16,-32,-64,-128, which corresponds to 2x ~ 128x gain.
    */
   int8_t gain;
+  
+  /** @brief Camera clock value in MHz. Recommended to be between 6 and 24. */
+  int8_t xclk;
 
   /** @brief Image light mode. */
   LightMode lightMode;
